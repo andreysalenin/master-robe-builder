@@ -758,7 +758,7 @@ function layout(raw) {
         railTotal += cw - 2;
       } else if (zn.type === 'shelves') {
         const nn = zn.n, gap = (h - nn * T) / (nn + 1);
-        zi.shelves = []; zi.gap = gap;
+        zi.shelves = []; zi.gap = gap; zi.n = nn;
         for (let q = 0; q < nn; q++) {
           const sz = z0 + gap * (q + 1) + T * q;
           zi.shelves.push(sz);
@@ -1521,7 +1521,12 @@ function fillComputed() {
       let t = `${f1(z.h)} clear, ${f1(z.z0)} to ${f1(z.z1)}`;
       if (z.type === 'drawers') t += z.sized ? ` · ${[...z.fronts.reduce((m, q) => m.set(q.box, (m.get(q.box) || 0) + 1), new Map())].map(([b, q]) => `${q} x ${f1(b)}`).join(' + ')} boxes, fronts ${z.fronts.map(q => f1(q.h)).join('/')}` : ` · fronts ${z.fronts.map(q => f1(q.h)).join('/')}`;
       if (z.type === 'hang') t += ` · rail at ${f1(z.railZ)}, ${f1(z.below)} below it`;
-      if (z.type === 'shelves' && z.n) t += ` · spaces ${f1(z.gap)}`;
+      if (z.type === 'shelves') {
+        // each opening: clear width x clear height between shelves (or the whole zone with none), and the shelf tops
+        const T = M.P.T, gap = z.n ? z.gap : z.h;
+        t += ` · ${z.n ? `${z.n + 1} openings, each` : 'single opening'} ${f1(s.cw)} x ${f1(gap)} (w x h)`;
+        if (z.n) t += ` · shelf tops at ${z.shelves.map(q => f1(q + T)).join(', ')}`;
+      }
       zr.textContent = t;
     });
   });
@@ -1647,7 +1652,7 @@ function renderElev() {
     const cx = (s.cx0 + s.cx1) / 2, mid = H - (z.z0 + z.z1) / 2;
     if (z.type === 'drawers') z.fronts.forEach(q => { if (q.h > 70) S.push(`<text class="lab" x="${s.cx0 + 26}" y="${H - q.z1 + 54}">${q.size ? `${f1(q.box)} box` : f1(q.h)}</text>`); });
     else if (z.h > 110) {
-      const lab = z.type === 'hang' ? `${f1(z.below)} below rail` : z.type === 'shelves' ? (z.n ? `${z.n} shelves` : 'shelf space') : 'open';
+      const lab = z.type === 'hang' ? `${f1(z.below)} below rail` : z.type === 'shelves' ? `${z.n + 1} x ${f1(z.n ? z.gap : z.h)} high` : 'open';
       const y = z.type === 'hang' ? Math.min(mid + 60, H - z.z0 - 30) : mid;
       S.push(`<text class="labk" x="${cx}" y="${y}" text-anchor="middle">${f1(z.h)}</text><text class="lab" x="${cx}" y="${y + 52}" text-anchor="middle">${esc(lab)}</text>`);
     }
