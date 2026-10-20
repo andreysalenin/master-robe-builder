@@ -419,26 +419,27 @@ const MINE = {
   W: 3798, H: 2555, wallDepth: 510, extraDepth: 90,
   depth: 447, sideGapL: 1.5, sideGapR: 1.5, backGap: 0, mainTop: 2148,
   T: 16, Tdf: 16, Tdb: 16, Tdbb: 16, Tback: 16, Tkick: 16, backs: false, topMode: 'continuous',
-  kickH: 60, kickSet: 20, adjSet: 20, adjGap: 1, railDrop: 50,
+  // the company's base: a 95 kicker under the drawer sections only; the hanging sections stand on a bottom panel on the floor
+  kickH: 95, kickSet: 20, adjSet: 20, adjGap: 1, railDrop: 50,
   dGap: 3, runnerLen: 400, runnerSide: 13, boxLess: 35, frontSet: 0, handleProud: 30, frontExtra: 35,
   // drawer sizes by box height (the quote: 185 x 400 and 121 x 400 Nover Krome); a blank front is the box plus frontExtra
   drawerSizes: [{ id: 'main', name: 'Main', box: 185, front: null }, { id: 'jewel', name: 'Jewellery', box: 121, front: null }],
   sections: [
     // the company's outer widths, so the drawer bank is the same as theirs: S1 383, S2 527 | S3-S5 583.7 | S6 527, S7 399
-    sec(383, null, [Zh(1482), Zs(null, 2)]),
+    sec(383, null, [Zh(1482), Zs(null, 2)], false),
     // S2 balances: it keeps the drawer bank on the centre line (527 with these partitions)
-    Object.assign(sec(527, null, [Zh(1000), Zh(null)]), { wMode: 'balance' }),
+    Object.assign(sec(527, null, [Zh(1000), Zh(null)], false), { wMode: 'balance' }),
     // the drawer bank: S3 takes what is left, S4 and S5 are locked to it, so the three columns are always equal
     sec(null, null, [Zd(M4J), Zs(null, 3)]),
     Object.assign(sec(null, null, [Zd(['main', 'main', 'main', 'main']), Zh(null)]), { wMode: 'link', link: 2 }),
     Object.assign(sec(null, null, [Zd(M4J), Zs(null, 3)]), { wMode: 'link', link: 2 }),
-    sec(527, null, [Zh(1000), Zh(null)]),
-    sec(399, null, [Zh(1482), Zs(null, 2)]),
+    sec(527, null, [Zh(1000), Zh(null)], false),
+    sec(399, null, [Zh(1482), Zs(null, 2)], false),
   ],
   // partitions 1, 2, 4, 5 and 8 doubled
   panels: [{ double: true }, { double: true }, {}, { double: true }, { double: true }, {}, {}, { double: true }],
   box: { show: false, label: 'Obstruction', xRight: 600, w: 300, z0: 1500, h: 300, d: 100, y0: 0, doorT: 14, doorL: null, maxAngle: 90, minClear: 10, gapP: 20 },
-  front: { doors: true, n: 4, zone: 90, rail: null, outer: 'oak', overlap: 30, doorT: 30, fascia: true, fasciaH: 115, finishes: ['oak', 'mirror', 'mirror', 'oak'] },
+  front: { doors: true, n: 4, zone: 90, rail: null, outer: 'oak', overlap: 30, doorT: 30, fascia: true, fasciaH: 100, finishes: ['oak', 'mirror', 'mirror', 'oak'] },
   sheet: { L: 3600, W: 1800, kerf: 4, trim: 10 },
 };
 // Creative by Design rev.01 as quoted: the first two sections at 2032, the rest at 2148, no rib above the tops,
@@ -454,14 +455,11 @@ const REV01 = (() => {
   S[2].wMode = 'auto'; S[2].w = null; S[2].link = null;          // S3 takes what is left, S4 and S5 follow it
   S[0].top = 2032; S[1].top = 2032;
   S[0].zones = [Zh(1482), Zs(null, 2)];                          // two adjustable shelves over the long hang
-  // the hanging sections stand on a bottom panel on the floor; only the drawer sections sit on a kicker
-  [0, 1, 5, 6].forEach(i => { S[i].kick = false; });
-  p.kickH = 95;
+  // base (95 kicker under the drawers only) and the 100 fascia are shared with the reworked design
   p.panels = [0, 1, 2, 3, 4, 5, 6, 7].map(j => ({ double: [0, 2, 3, 4, 7].includes(j) }));
   // S4: an open cubby at the bottom in three compartments, then three 185 drawers whose top lines up with the 121s in
   // S3 and S5 (4 x 220 + 156 fronts + 6 gaps = 1054 = 366 cubby + 16 shelf + 3 x 220 + 4 gaps)
   S[3].zones = [Zs(366, 2), Zd(['main', 'main', 'main']), Zh(null)];
-  p.front = Object.assign(p.front, { fasciaH: 100 });            // their fascia is about 100 deep
   return p;
 })();
 const PRESETS = { mine: MINE, rev01: REV01 };
@@ -1314,7 +1312,7 @@ const LS_BOOK = 'master-robe-builder.book.v1';
 let book = readLS(LS_BOOK);
 if (!book || !book.slots) { book = { active: 'mine', slots: {}, unlocked: null }; const old = readLS(LS); if (old) book.slots.mine = old; }
 // a corrected company preset replaces any copy saved from an older version
-const REV01_VERSION = 3, MINE_VERSION = 2;
+const REV01_VERSION = 4, MINE_VERSION = 3;
 if (book.rev01Version !== REV01_VERSION) { delete book.slots.rev01; book.rev01Version = REV01_VERSION; }
 if (book.mineVersion !== MINE_VERSION) { if (!book.unlocked) delete book.slots.mine; book.mineVersion = MINE_VERSION; }
 // the company design uses your obstruction once it is unlocked, so its clashes show
@@ -1385,7 +1383,7 @@ const F = {
     ['front.overlap', 'Door overlap', 'num', 'mm', 'Where a front door meets a back one.', 1],
     ['front.doorT', 'Door thickness', 'num', 'mm', '', 1],
     ['front.fascia', 'Fascia across the top', 'bool'],
-    ['front.fasciaH', 'Fascia height', 'num', 'mm', 'Doors run from the floor to its underside: 2555 - 115 = 2440.', 1],
+    ['front.fasciaH', 'Fascia height', 'num', 'mm', 'Doors run from the floor to its underside: 2555 - 100 = 2455.', 1],
   ],
   build: [
     ['h', 'Board'],
