@@ -424,15 +424,16 @@ const MINE = {
   // drawer sizes by box height (the quote: 185 x 400 and 121 x 400 Nover Krome); a blank front is the box plus frontExtra
   drawerSizes: [{ id: 'main', name: 'Main', box: 185, front: null }, { id: 'jewel', name: 'Jewellery', box: 121, front: null }],
   sections: [
-    sec(391.5, null, [Zh(1482), Zs(null, 2)]),
-    // S2 balances: it gives up the 16 mm P2's doubling adds on the left, so the drawer bank stays on the centre line
+    // the company's outer widths, so the drawer bank is the same as theirs: S1 383, S2 527 | S3-S5 583.7 | S6 527, S7 399
+    sec(383, null, [Zh(1482), Zs(null, 2)]),
+    // S2 balances: it keeps the drawer bank on the centre line (527 with these partitions)
     Object.assign(sec(527, null, [Zh(1000), Zh(null)]), { wMode: 'balance' }),
     // the drawer bank: S3 takes what is left, S4 and S5 are locked to it, so the three columns are always equal
     sec(null, null, [Zd(M4J), Zs(null, 3)]),
     Object.assign(sec(null, null, [Zd(['main', 'main', 'main', 'main']), Zh(null)]), { wMode: 'link', link: 2 }),
     Object.assign(sec(null, null, [Zd(M4J), Zs(null, 3)]), { wMode: 'link', link: 2 }),
     sec(527, null, [Zh(1000), Zh(null)]),
-    Object.assign(sec(null, null, [Zh(1482), Zs(null, 2)]), { wMode: 'link', link: 0 }),
+    sec(399, null, [Zh(1482), Zs(null, 2)]),
   ],
   // partitions 1, 2, 4, 5 and 8 doubled
   panels: [{ double: true }, { double: true }, {}, { double: true }, { double: true }, {}, {}, { double: true }],
@@ -443,13 +444,14 @@ const MINE = {
 // Creative by Design rev.01 as quoted: the first two sections at 2032, the rest at 2148, no rib above the tops,
 // 11 x 185 and 2 x 121 drawers
 const REV01 = (() => {
-  // measured off their dimensioned elevation (page 2 of the quote, about 3 mm/px) and cross-checked against their
-  // rail lengths (376, 520, 577, 392 = clear width - 7): the drawer bank is centred on the cavity, so a door parked
-  // either side clears the drawers by the same amount; S1 and S7 differ by 16 to make up for the doubled P3
+  // measured off their dimensioned elevation (page 2 of the quote) and set by their rail lengths (376, 520, 577, 392 =
+  // clear width - 7): S1 383, S2 527, S6 527, S7 399, and three equal 583.7 drawer columns (577 + 7 = 584), so the bank
+  // is centred and a door parked either side clears the drawers by the same amount. S1 and S7 differ by 16 to make up
+  // for the doubled P3. (The drawing itself shows S3 about 15 wider; the rails say equal.)
   const p = clone(MINE), S = p.sections;
   const fixed = (i, w) => { S[i].wMode = 'fixed'; S[i].w = w; S[i].link = null; };
-  fixed(0, 383); fixed(1, 527); fixed(2, 594); fixed(3, 579); fixed(5, 527); fixed(6, 399);
-  S[4].wMode = 'auto'; S[4].w = null; S[4].link = null;         // S5 takes the rest: 578, within a millimetre of the drawing
+  fixed(0, 383); fixed(1, 527); fixed(5, 527); fixed(6, 399);
+  S[2].wMode = 'auto'; S[2].w = null; S[2].link = null;          // S3 takes what is left, S4 and S5 follow it
   S[0].top = 2032; S[1].top = 2032;
   S[0].zones = [Zh(1482), Zs(null, 2)];                          // two adjustable shelves over the long hang
   // the hanging sections stand on a bottom panel on the floor; only the drawer sections sit on a kicker
@@ -1312,8 +1314,9 @@ const LS_BOOK = 'master-robe-builder.book.v1';
 let book = readLS(LS_BOOK);
 if (!book || !book.slots) { book = { active: 'mine', slots: {}, unlocked: null }; const old = readLS(LS); if (old) book.slots.mine = old; }
 // a corrected company preset replaces any copy saved from an older version
-const REV01_VERSION = 2;
+const REV01_VERSION = 3, MINE_VERSION = 2;
 if (book.rev01Version !== REV01_VERSION) { delete book.slots.rev01; book.rev01Version = REV01_VERSION; }
+if (book.mineVersion !== MINE_VERSION) { if (!book.unlocked) delete book.slots.mine; book.mineVersion = MINE_VERSION; }
 // the company design uses your obstruction once it is unlocked, so its clashes show
 const presetOf = (k) => k === 'rev01' ? Object.assign(C.clone(C.REV01), book.unlocked ? { box: C.clone(book.unlocked.box) } : {}) : C.clone(book.unlocked || C.MINE);
 let state = C.normalize(book.slots[book.active] || presetOf(book.active));
@@ -1774,7 +1777,15 @@ async function findLock() {
     const r = await fetch('design.lock.json', { cache: 'no-store' });
     if (!r.ok) return;
     const j = await r.json();
-    if (j && j.ct && j.iv && j.salt) { lockData = j; $('unlock-row').hidden = false; $('lock-none').hidden = true; $('hdr-unlock').hidden = false; }
+    if (j && j.ct && j.iv && j.salt) {
+      lockData = j; $('unlock-row').hidden = false; $('lock-none').hidden = true; $('hdr-unlock').hidden = false;
+      // the locked design on the site has changed since this browser unlocked it: drop the old copy
+      if (book.unlocked && book.lockId !== j.ct.slice(0, 40)) {
+        book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION, mineVersion: MINE_VERSION };
+        state = C.normalize(C.MINE); save(); renderEditor(); rebuild(false); updateDesignSeg();
+        lockStatus('Your locked design has been updated since you last unlocked it. Unlock it again to load the new version.');
+      }
+    }
   } catch (e) { /* no lock file here */ }
 }
 function lockStatus(t) { $('lock-status').textContent = t || ''; }
@@ -1783,7 +1794,7 @@ function bindLock() {
     if (!lockData) return;
     const pw = $('pw-open').value; if (!pw) { lockStatus('Enter the password first.'); return; }
     lockStatus('Unlocking...');
-    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d, rev01Version: REV01_VERSION }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
+    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d, lockId: lockData.ct.slice(0, 40), rev01Version: REV01_VERSION, mineVersion: MINE_VERSION }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
     catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
   };
   $('unlock').addEventListener('click', unlock);
@@ -1791,7 +1802,7 @@ function bindLock() {
   $('hdr-unlock').addEventListener('click', () => { $('lockbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('pw-open').focus(), 400); });
   $('lock-again').addEventListener('click', () => {
     try { localStorage.removeItem(LS); localStorage.removeItem(LS_BOOK); } catch (e) { /* storage off */ }
-    book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION };
+    book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION, mineVersion: MINE_VERSION };
     state = C.normalize(C.MINE); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Forgotten on this device; the page is back to the example design.');
   });
   $('encrypt').addEventListener('click', async () => {
