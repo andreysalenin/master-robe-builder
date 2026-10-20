@@ -443,16 +443,23 @@ const MINE = {
 // Creative by Design rev.01 as quoted: the first two sections at 2032, the rest at 2148, no rib above the tops,
 // 11 x 185 and 2 x 121 drawers
 const REV01 = (() => {
-  const p = clone(MINE);
-  p.sections[0].top = 2032; p.sections[0].zones = [Zh(1482), Zs(null, 1)];
-  p.sections[1].top = 2032;
-  // their widths; partitions 1, 3, 4, 5 and 8 doubled, none above the tops
-  p.sections[0].wMode = 'fixed'; p.sections[0].w = 407.5;
-  p.sections[1].wMode = 'fixed'; p.sections[1].w = 527; p.sections[5] = Object.assign(p.sections[5], { wMode: 'fixed', w: 527 }); p.sections[6] = Object.assign(p.sections[6], { wMode: 'fixed', w: 407.5 });
+  // measured off their dimensioned elevation (page 2 of the quote, about 3 mm/px) and cross-checked against their
+  // rail lengths (376, 520, 577, 392 = clear width - 7): the drawer bank is centred on the cavity, so a door parked
+  // either side clears the drawers by the same amount; S1 and S7 differ by 16 to make up for the doubled P3
+  const p = clone(MINE), S = p.sections;
+  const fixed = (i, w) => { S[i].wMode = 'fixed'; S[i].w = w; S[i].link = null; };
+  fixed(0, 383); fixed(1, 527); fixed(2, 594); fixed(3, 579); fixed(5, 527); fixed(6, 399);
+  S[4].wMode = 'auto'; S[4].w = null; S[4].link = null;         // S5 takes the rest: 578, within a millimetre of the drawing
+  S[0].top = 2032; S[1].top = 2032;
+  S[0].zones = [Zh(1482), Zs(null, 2)];                          // two adjustable shelves over the long hang
+  // the hanging sections stand on a bottom panel on the floor; only the drawer sections sit on a kicker
+  [0, 1, 5, 6].forEach(i => { S[i].kick = false; });
+  p.kickH = 95;
   p.panels = [0, 1, 2, 3, 4, 5, 6, 7].map(j => ({ double: [0, 2, 3, 4, 7].includes(j) }));
-  // S4: an open cubby at the bottom, then three 185 drawers whose top lines up with the 121s in S3 and S5
-  // (4 x 220 + 156 fronts + 6 gaps = 1054 = 366 cubby + 16 shelf + 3 x 220 + 4 gaps)
-  p.sections[3].zones = [Zs(366, 1), Zd(['main', 'main', 'main']), Zh(null)];
+  // S4: an open cubby at the bottom in three compartments, then three 185 drawers whose top lines up with the 121s in
+  // S3 and S5 (4 x 220 + 156 fronts + 6 gaps = 1054 = 366 cubby + 16 shelf + 3 x 220 + 4 gaps)
+  S[3].zones = [Zs(366, 2), Zd(['main', 'main', 'main']), Zh(null)];
+  p.front = Object.assign(p.front, { fasciaH: 100 });            // their fascia is about 100 deep
   return p;
 })();
 const PRESETS = { mine: MINE, rev01: REV01 };
@@ -1304,6 +1311,9 @@ const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } 
 const LS_BOOK = 'master-robe-builder.book.v1';
 let book = readLS(LS_BOOK);
 if (!book || !book.slots) { book = { active: 'mine', slots: {}, unlocked: null }; const old = readLS(LS); if (old) book.slots.mine = old; }
+// a corrected company preset replaces any copy saved from an older version
+const REV01_VERSION = 2;
+if (book.rev01Version !== REV01_VERSION) { delete book.slots.rev01; book.rev01Version = REV01_VERSION; }
 // the company design uses your obstruction once it is unlocked, so its clashes show
 const presetOf = (k) => k === 'rev01' ? Object.assign(C.clone(C.REV01), book.unlocked ? { box: C.clone(book.unlocked.box) } : {}) : C.clone(book.unlocked || C.MINE);
 let state = C.normalize(book.slots[book.active] || presetOf(book.active));
@@ -1773,7 +1783,7 @@ function bindLock() {
     if (!lockData) return;
     const pw = $('pw-open').value; if (!pw) { lockStatus('Enter the password first.'); return; }
     lockStatus('Unlocking...');
-    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
+    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d, rev01Version: REV01_VERSION }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
     catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
   };
   $('unlock').addEventListener('click', unlock);
@@ -1781,7 +1791,7 @@ function bindLock() {
   $('hdr-unlock').addEventListener('click', () => { $('lockbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('pw-open').focus(), 400); });
   $('lock-again').addEventListener('click', () => {
     try { localStorage.removeItem(LS); localStorage.removeItem(LS_BOOK); } catch (e) { /* storage off */ }
-    book = { active: 'mine', slots: {}, unlocked: null };
+    book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION };
     state = C.normalize(C.MINE); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Forgotten on this device; the page is back to the example design.');
   });
   $('encrypt').addEventListener('click', async () => {
