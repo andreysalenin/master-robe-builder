@@ -266,8 +266,9 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
     <div class="hdr-r">
       <button type="button" class="btn" id="hdr-unlock" hidden>Unlock my design</button>
       <div class="seg" role="group" aria-label="Design" id="design-seg">
-        <button type="button" data-design="mine" aria-pressed="true" id="ds-mine">Reworked</button>
-        <button type="button" data-design="rev01" aria-pressed="false" id="ds-rev01">Company rev.01</button>
+        <button type="button" data-design="A" aria-pressed="true">AAGL - A</button>
+        <button type="button" data-design="B" aria-pressed="false">AAGL - B</button>
+        <button type="button" data-design="rev01" aria-pressed="false">Company rev.01</button>
       </div>
       <div class="seg" role="group" aria-label="Theme" id="theme-seg">
         <button type="button" data-theme-set="auto" aria-pressed="true">Auto</button>
@@ -388,8 +389,8 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
           </div>
           <div class="hint" id="lock-none">No locked design on this site. You can make one below.</div>
           <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="lock-again">Forget my design on this device</button></div>
-          <details class="more"><summary>Encrypt this design for publishing</summary>
-            <div class="hint" style="margin:8px 0">Encrypts everything on this page (cavity, sections, partitions, everything in the Obstruction tab, even its name) with a password, here in your browser; the password goes nowhere. Save the result as <b>design.lock.json</b> next to index.html. Use a long password, 4 or more random words: anyone can copy the file and try passwords against it.</div>
+          <details class="more"><summary>Encrypt AAGL - A and B for publishing</summary>
+            <div class="hint" style="margin:8px 0">Encrypts AAGL - A and AAGL - B as they stand on this page (cavity, sections, partitions, everything in the Obstruction tab, even its name) with a password, here in your browser; the password goes nowhere. Save the result as <b>design.lock.json</b> next to index.html. Use a long password, 4 or more random words: anyone can copy the file and try passwords against it.</div>
             <div class="pwrow"><input type="password" id="pw-new" autocomplete="new-password" placeholder="Password" aria-label="New password"><input type="password" id="pw-new2" autocomplete="new-password" placeholder="Repeat it" aria-label="Repeat the password"><button type="button" class="btn" id="encrypt">Encrypt</button></div>
             <textarea class="io" id="lock-out" readonly placeholder="The encrypted design appears here" style="margin-top:6px"></textarea>
             <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="copy-lock">Copy encrypted design</button><button type="button" class="btn small" id="dl-lock">Save design.lock.json</button></div>
@@ -462,7 +463,9 @@ const REV01 = (() => {
   S[3].zones = [Zs(366, 2), Zd(['main', 'main', 'main']), Zh(null)];
   return p;
 })();
-const PRESETS = { mine: MINE, rev01: REV01 };
+// AAGL - B: from master-robe-settings.json
+const AAGL_B = {"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1.5,"sideGapR":1.5,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":95,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":3,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":null},{"id":"jewel","name":"Jewellery","box":121,"front":null}],"sections":[{"w":383,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":226,"n":0}],"wMode":"fixed","link":null},{"w":527,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}],"wMode":"balance","link":null},{"w":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}],"wMode":"auto","link":null},{"w":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}],"wMode":"link","link":2},{"w":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}],"wMode":"link","link":2},{"w":527,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}],"wMode":"fixed","link":null},{"w":399,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}],"wMode":"fixed","link":null}],"panels":[{"h":null,"h2":null,"double":true},{"h":null,"h2":null,"double":true},{"h":null,"h2":null,"double":false},{"h":null,"h2":null,"double":true},{"h":null,"h2":null,"double":true},{"h":null,"h2":null,"double":false},{"h":null,"h2":null,"double":false},{"h":null,"h2":null,"double":true}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}};
+const PRESETS = { A: MINE, B: AAGL_B, rev01: REV01 };
 
 function normalize(p) {
   const P = Object.assign(clone(MINE), p ? clone(p) : {});
@@ -1019,7 +1022,7 @@ function slideDoors(pos, tracks, dw, x0, x1, i, raw) {
   return pos;
 }
 
-const api = { slideDoors, MINE, REV01, PRESETS, normalize, layout, cutList, hardware, nest, obsGeom, clone };
+const api = { slideDoors, MINE, AAGL_B, REV01, PRESETS, normalize, layout, cutList, hardware, nest, obsGeom, clone };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.RobeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1307,16 +1310,15 @@ const f1 = (v) => { if (v === null || v === undefined || !isFinite(v)) return '-
 const readLS = (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
 const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage off */ } };
 
-// two designs to switch between, each keeping its own edits: yours (the unlocked one once unlocked) and the company's
-const LS_BOOK = 'master-robe-builder.book.v1';
+// three designs to switch between, each keeping its own edits: AAGL - A, AAGL - B (both replaced by the unlocked ones
+// once unlocked) and the company's
+const LS_BOOK = 'master-robe-builder.book.v1', BOOK_V = 5, KEYS = ['A', 'B', 'rev01'];
+const NAMES = { A: 'AAGL - A', B: 'AAGL - B', rev01: 'Company rev.01' };
+const freshBook = () => ({ v: BOOK_V, active: 'A', slots: {}, unlocked: null });
 let book = readLS(LS_BOOK);
-if (!book || !book.slots) { book = { active: 'mine', slots: {}, unlocked: null }; const old = readLS(LS); if (old) book.slots.mine = old; }
-// a corrected company preset replaces any copy saved from an older version
-const REV01_VERSION = 4, MINE_VERSION = 3;
-if (book.rev01Version !== REV01_VERSION) { delete book.slots.rev01; book.rev01Version = REV01_VERSION; }
-if (book.mineVersion !== MINE_VERSION) { if (!book.unlocked) delete book.slots.mine; book.mineVersion = MINE_VERSION; }
+if (!book || !book.slots || book.v !== BOOK_V || !KEYS.includes(book.active)) book = freshBook();
 // the company design uses your obstruction once it is unlocked, so its clashes show
-const presetOf = (k) => k === 'rev01' ? Object.assign(C.clone(C.REV01), book.unlocked ? { box: C.clone(book.unlocked.box) } : {}) : C.clone(book.unlocked || C.MINE);
+const presetOf = (k) => k === 'rev01' ? Object.assign(C.clone(C.REV01), book.unlocked ? { box: C.clone(book.unlocked.A.box) } : {}) : C.clone((book.unlocked && book.unlocked[k]) || C.PRESETS[k]);
 let state = C.normalize(book.slots[book.active] || presetOf(book.active));
 let model = null, viewer = null, timer = null, sel = 0;
 const openSecs = new Set([0]);
@@ -1540,7 +1542,6 @@ function fillComputed() {
 /* ---------------------------------------------------------------- rebuild */
 function save() { book.slots[book.active] = state; writeLS(LS_BOOK, book); }
 function updateDesignSeg() {
-  $('ds-mine').textContent = book.unlocked ? 'My design' : 'Reworked';
   document.querySelectorAll('[data-design]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.design === book.active)));
 }
 function switchTo(k) {
@@ -1548,7 +1549,7 @@ function switchTo(k) {
   book.slots[book.active] = state; book.active = k;
   state = C.normalize(book.slots[k] || presetOf(k)); save(); renderEditor(); rebuild(true); updateDesignSeg();
   const nb = model.checks.filter(c => c.level === 'bad').length;
-  status(`${k === 'rev01' ? 'The company\'s rev.01' : book.unlocked ? 'Your design' : 'The reworked design'}${nb ? `: ${nb} clash${nb > 1 ? 'es' : ''}, in red` : ', no clashes'}.`);
+  status(`${NAMES[k]}${nb ? `: ${nb} clash${nb > 1 ? 'es' : ''}, in red` : ', no clashes'}.`);
 }
 function rebuild(keepView) {
   try { model = C.layout(state); }
@@ -1765,14 +1766,17 @@ async function keyFrom(pw, salt, iter) {
   const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
+// what gets locked: AAGL - A and AAGL - B as they stand on this page now
+function currentDesigns() { book.slots[book.active] = state; return { A: book.slots.A || presetOf('A'), B: book.slots.B || presetOf('B') }; }
 async function encryptDesign(pw) {
   const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 600000;
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFrom(pw, salt, iter), new TextEncoder().encode(JSON.stringify({ v: 1, state })));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFrom(pw, salt, iter), new TextEncoder().encode(JSON.stringify({ v: 2, designs: currentDesigns() })));
   return { v: 1, kdf: 'PBKDF2-SHA256', cipher: 'AES-256-GCM', iter, salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)) };
 }
 async function decryptDesign(lock, pw) {
   const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(lock.iv) }, await keyFrom(pw, unb64(lock.salt), lock.iter), unb64(lock.ct));
-  return JSON.parse(new TextDecoder().decode(pt)).state;
+  const o = JSON.parse(new TextDecoder().decode(pt));
+  return o.designs ? o.designs : { A: o.state, B: null };
 }
 let lockData = null;
 async function findLock() {
@@ -1784,8 +1788,8 @@ async function findLock() {
       lockData = j; $('unlock-row').hidden = false; $('lock-none').hidden = true; $('hdr-unlock').hidden = false;
       // the locked design on the site has changed since this browser unlocked it: drop the old copy
       if (book.unlocked && book.lockId !== j.ct.slice(0, 40)) {
-        book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION, mineVersion: MINE_VERSION };
-        state = C.normalize(C.MINE); save(); renderEditor(); rebuild(false); updateDesignSeg();
+        book = freshBook();
+        state = C.normalize(presetOf('A')); save(); renderEditor(); rebuild(false); updateDesignSeg();
         lockStatus('Your locked design has been updated since you last unlocked it. Unlock it again to load the new version.');
       }
     }
@@ -1797,7 +1801,12 @@ function bindLock() {
     if (!lockData) return;
     const pw = $('pw-open').value; if (!pw) { lockStatus('Enter the password first.'); return; }
     lockStatus('Unlocking...');
-    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d, lockId: lockData.ct.slice(0, 40), rev01Version: REV01_VERSION, mineVersion: MINE_VERSION }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
+    try {
+      const d = await decryptDesign(lockData, pw), u = { A: C.normalize(d.A), B: C.normalize(d.B || C.PRESETS.B) };
+      book = Object.assign(freshBook(), { unlocked: u, lockId: lockData.ct.slice(0, 40) }); state = C.clone(u.A);
+      $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg();
+      lockStatus('AAGL - A and B are unlocked, and the company design now shows its clashes with them.');
+    }
     catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
   };
   $('unlock').addEventListener('click', unlock);
@@ -1805,8 +1814,8 @@ function bindLock() {
   $('hdr-unlock').addEventListener('click', () => { $('lockbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('pw-open').focus(), 400); });
   $('lock-again').addEventListener('click', () => {
     try { localStorage.removeItem(LS); localStorage.removeItem(LS_BOOK); } catch (e) { /* storage off */ }
-    book = { active: 'mine', slots: {}, unlocked: null, rev01Version: REV01_VERSION, mineVersion: MINE_VERSION };
-    state = C.normalize(C.MINE); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Forgotten on this device; the page is back to the example design.');
+    book = freshBook();
+    state = C.normalize(presetOf('A')); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Forgotten on this device; the page is back to the example design.');
   });
   $('encrypt').addEventListener('click', async () => {
     const a = $('pw-new').value, b = $('pw-new2').value;
