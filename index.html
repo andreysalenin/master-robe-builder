@@ -212,6 +212,8 @@ svg .p-rail { fill: var(--hang); stroke: none; }
 svg .p-front { fill: var(--front); stroke: var(--board-edge); stroke-width: 2.5; }
 svg .p-handle { fill: var(--ink); }
 svg .p-obs { fill: var(--obs-soft); stroke: var(--obs); stroke-width: 4; }
+svg .p-clash { fill: color-mix(in srgb, var(--bad) 40%, transparent); stroke: var(--bad); stroke-width: 6; }
+svg .p-tight { fill: color-mix(in srgb, var(--warn) 35%, transparent); stroke: var(--warn); stroke-width: 5; }
 svg .p-swing { fill: color-mix(in srgb, var(--obs) 14%, transparent); stroke: var(--obs); stroke-width: 3; stroke-dasharray: 12 8; }
 svg .p-fascia { fill: color-mix(in srgb, var(--oak) 70%, transparent); stroke: var(--oak); stroke-width: 2; }
 svg .p-sdoor { fill: none; stroke: var(--oak); stroke-width: 3; stroke-dasharray: 30 14; }
@@ -263,11 +265,10 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
     </div>
     <div class="hdr-r">
       <button type="button" class="btn" id="hdr-unlock" hidden>Unlock my design</button>
-      <select id="preset" aria-label="Load a design">
-        <option value="">Load a design...</option>
-        <option value="mine">Reworked design</option>
-        <option value="rev01">Creative by Design rev.01, as quoted</option>
-      </select>
+      <div class="seg" role="group" aria-label="Design" id="design-seg">
+        <button type="button" data-design="mine" aria-pressed="true" id="ds-mine">Reworked</button>
+        <button type="button" data-design="rev01" aria-pressed="false" id="ds-rev01">Company rev.01</button>
+      </div>
       <div class="seg" role="group" aria-label="Theme" id="theme-seg">
         <button type="button" data-theme-set="auto" aria-pressed="true">Auto</button>
         <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
@@ -342,6 +343,7 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
               <span><i style="border-color:var(--hang)"></i>hanging rail</span>
               <span id="leg-obs"><i style="border-color:var(--obs);border-top-style:dashed"></i><span id="leg-obs-t">door swing</span></span>
               <span><i style="border-color:var(--oak)"></i>fascia / sliding doors</span>
+              <span id="leg-clash"><i style="border-color:var(--bad);border-top-width:6px"></i>clash</span>
             </div>
           </div>
           <div class="side-row" id="side-row">
@@ -375,7 +377,7 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
           <div>
             <label for="io" class="lbl">Paste settings to load them</label>
             <textarea class="io" id="io" placeholder='{"W": 3798, ...}'></textarea>
-            <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="load-json">Load pasted settings</button><button type="button" class="btn small danger" id="reset">Back to the reworked design</button></div>
+            <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="load-json">Load pasted settings</button><button type="button" class="btn small danger" id="reset">Reset this design</button></div>
           </div>
         </div>
         <div class="lockbox" id="lockbox">
@@ -1298,7 +1300,13 @@ const f1 = (v) => { if (v === null || v === undefined || !isFinite(v)) return '-
 const readLS = (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
 const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage off */ } };
 
-let state = C.normalize(readLS(LS) || C.MINE);
+// two designs to switch between, each keeping its own edits: yours (the unlocked one once unlocked) and the company's
+const LS_BOOK = 'master-robe-builder.book.v1';
+let book = readLS(LS_BOOK);
+if (!book || !book.slots) { book = { active: 'mine', slots: {}, unlocked: null }; const old = readLS(LS); if (old) book.slots.mine = old; }
+// the company design uses your obstruction once it is unlocked, so its clashes show
+const presetOf = (k) => k === 'rev01' ? Object.assign(C.clone(C.REV01), book.unlocked ? { box: C.clone(book.unlocked.box) } : {}) : C.clone(book.unlocked || C.MINE);
+let state = C.normalize(book.slots[book.active] || presetOf(book.active));
 let model = null, viewer = null, timer = null, sel = 0;
 const openSecs = new Set([0]);
 const view = { doors: false, fascia: true, swing: true, openAll: false, angle: 90 };
@@ -1514,7 +1522,18 @@ function fillComputed() {
 }
 
 /* ---------------------------------------------------------------- rebuild */
-function save() { writeLS(LS, state); }
+function save() { book.slots[book.active] = state; writeLS(LS_BOOK, book); }
+function updateDesignSeg() {
+  $('ds-mine').textContent = book.unlocked ? 'My design' : 'Reworked';
+  document.querySelectorAll('[data-design]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.design === book.active)));
+}
+function switchTo(k) {
+  if (k === book.active) return;
+  book.slots[book.active] = state; book.active = k;
+  state = C.normalize(book.slots[k] || presetOf(k)); save(); renderEditor(); rebuild(true); updateDesignSeg();
+  const nb = model.checks.filter(c => c.level === 'bad').length;
+  status(`${k === 'rev01' ? 'The company\'s rev.01' : book.unlocked ? 'Your design' : 'The reworked design'}${nb ? `: ${nb} clash${nb > 1 ? 'es' : ''}, in red` : ', no clashes'}.`);
+}
 function rebuild(keepView) {
   try { model = C.layout(state); }
   catch (e) { console.error(e); status('That combination does not lay out: ' + e.message); return; }
@@ -1526,6 +1545,7 @@ function rebuild(keepView) {
   const on = !!model.obs, lab = model.P.box.label;
   $('tab-obs').textContent = lab; $('obs-title').textContent = lab; $('obs-angle-l').textContent = `${lab} door`; $('leg-obs-t').textContent = `${lab.toLowerCase()} door swing`;
   for (const id of ['obs-card', 'chip-swing', 'swing-bar', 'leg-obs', 'side-row']) $(id).hidden = !on;
+  $('leg-clash').hidden = !(on && model.obsRes.list.some(r => r.level !== 'ok'));
   document.querySelector('.results').classList.toggle('one', !on);
   $('obs-angle').max = model.P.box.maxAngle;
   if (view.angle > model.P.box.maxAngle) { view.angle = model.P.box.maxAngle; $('obs-angle').value = view.angle; $('obs-out').textContent = view.angle + '°'; }
@@ -1609,6 +1629,8 @@ function renderElev() {
     } else if (p.kind === 'handle') S.push(`<rect class="p-handle" x="${p.x0}" y="${H - p.z1}" width="${p.x1 - p.x0}" height="${p.z1 - p.z0}" rx="5"/>`);
     else if (p.kind !== 'back' || !M.parts.some(q => q.kind === 'shelf')) R(p, 'p-' + p.kind);
   }
+  // parts that hit the obstruction or its door swing, or come closer than wanted
+  if (M.obsRes) for (const r of M.obsRes.list) if (r.level !== 'ok' && order.includes(r.p.kind)) S.push(`<rect class="${r.level === 'bad' ? 'p-clash' : 'p-tight'}" x="${r.p.x0 - 8}" y="${H - r.p.z1 - 8}" width="${Math.max(1, r.p.x1 - r.p.x0) + 16}" height="${Math.max(1, r.p.z1 - r.p.z0) + 16}" rx="6"><title>${esc(r.p.name)}: ${f1(r.d)} mm</title></rect>`);
   // zone labels
   M.secs.forEach(s => s.zones.forEach(z => {
     const cx = (s.cx0 + s.cx1) / 2, mid = H - (z.z0 + z.z1) / 2;
@@ -1656,7 +1678,8 @@ function renderSide() {
   S.push(HATCH);
   S.push(`<rect class="wall" x="-70" y="${Y(H) - 60}" width="70" height="${H - zLo + 60}"/><rect class="wall" x="-70" y="${Y(H) - 60}" width="${D + 140}" height="60"/>`);
   S.push(`<line class="ceil" x1="${D}" x2="${D}" y1="${Y(H)}" y2="${Y(zLo)}" stroke-dasharray="14 10"/><line class="ceil" x1="${P.wallDepth}" x2="${P.wallDepth}" y1="${Y(H)}" y2="${Y(zLo)}" stroke-dasharray="4 10"/>`);
-  const box = (p, cls) => { const z0 = Math.max(zLo, p.z0); if (p.z1 <= zLo) return; S.push(`<rect class="${cls}" x="${p.y0}" y="${Y(p.z1)}" width="${Math.max(1, p.y1 - p.y0)}" height="${Math.max(1, p.z1 - z0)}"/>`); };
+  const lvl = new Map((M.obsRes ? M.obsRes.list : []).filter(r => r.level !== 'ok').map(r => [r.p.id, r.level]));
+  const box = (p, cls) => { const z0 = Math.max(zLo, p.z0); if (p.z1 <= zLo) return; const l = lvl.get(p.id); S.push(`<rect class="${cls}" x="${p.y0}" y="${Y(p.z1)}" width="${Math.max(1, p.y1 - p.y0)}" height="${Math.max(1, p.z1 - z0)}"/>`); if (l) S.push(`<rect class="${l === 'bad' ? 'p-clash' : 'p-tight'}" x="${p.y0}" y="${Y(p.z1)}" width="${Math.max(1, p.y1 - p.y0)}" height="${Math.max(1, p.z1 - z0)}"/>`); };
   // the rib just beyond the cut, as a ghost
   const beyond = M.ribs.filter(r => r.x0 >= cx).sort((a, b) => a.x0 - b.x0)[0];
   if (beyond) box({ y0: M.yc0, y1: M.yc1, z0: 0, z1: beyond.h }, 'p-ghost');
@@ -1750,15 +1773,16 @@ function bindLock() {
     if (!lockData) return;
     const pw = $('pw-open').value; if (!pw) { lockStatus('Enter the password first.'); return; }
     lockStatus('Unlocking...');
-    try { state = C.normalize(await decryptDesign(lockData, pw)); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); lockStatus('Your design is loaded, and remembered in this browser until you forget it.'); }
+    try { const d = C.normalize(await decryptDesign(lockData, pw)); book = { active: 'mine', slots: {}, unlocked: d }; state = C.clone(d); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Your design is unlocked. It replaces the reworked one, and the company design now shows its clashes with it.'); }
     catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
   };
   $('unlock').addEventListener('click', unlock);
   $('pw-open').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
   $('hdr-unlock').addEventListener('click', () => { $('lockbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('pw-open').focus(), 400); });
   $('lock-again').addEventListener('click', () => {
-    try { localStorage.removeItem(LS); } catch (e) { /* storage off */ }
-    state = C.normalize(C.MINE); renderEditor(); rebuild(false); lockStatus('Forgotten on this device; the page is back to the example design.');
+    try { localStorage.removeItem(LS); localStorage.removeItem(LS_BOOK); } catch (e) { /* storage off */ }
+    book = { active: 'mine', slots: {}, unlocked: null };
+    state = C.normalize(C.MINE); renderEditor(); rebuild(false); updateDesignSeg(); lockStatus('Forgotten on this device; the page is back to the example design.');
   });
   $('encrypt').addEventListener('click', async () => {
     const a = $('pw-new').value, b = $('pw-new2').value;
@@ -1867,7 +1891,7 @@ function bind() {
   const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.swing = $('v-swing').checked; view.openAll = $('v-open').checked; if (viewer) viewer.set(view); renderElev(); };
   ['v-doors', 'v-fascia', 'v-swing', 'v-open'].forEach(id => $(id).addEventListener('change', chips));
   $('obs-angle').addEventListener('input', (e) => { view.angle = Number(e.target.value); $('obs-out').textContent = view.angle + '°'; if (viewer) viewer.set(view); renderSide(); });
-  $('preset').addEventListener('change', (e) => { const p = C.PRESETS[e.target.value]; if (!p) return; state = C.normalize(p); e.target.value = ''; save(); renderEditor(); rebuild(true); status('Design loaded.'); });
+  document.querySelectorAll('[data-design]').forEach(b => b.addEventListener('click', () => switchTo(b.dataset.design)));
   $('copy-csv').addEventListener('click', () => copyText(csv(), 'Cut list'));
   $('copy-json').addEventListener('click', () => copyText(JSON.stringify(state, null, 1), 'Settings'));
   $('dl-json').addEventListener('click', async () => {
@@ -1879,7 +1903,7 @@ function bind() {
     status('If nothing downloaded, use Copy settings instead: this view may block downloads.');
   });
   $('load-json').addEventListener('click', () => { try { state = C.normalize(JSON.parse($('io').value)); save(); renderEditor(); rebuild(false); status('Settings loaded.'); } catch (e) { status('That text is not a settings file from this page.'); } });
-  $('reset').addEventListener('click', () => { state = C.normalize(C.MINE); save(); renderEditor(); rebuild(false); status('Back to the reworked design.'); });
+  $('reset').addEventListener('click', () => { state = C.normalize(presetOf(book.active)); save(); renderEditor(); rebuild(false); status('This design is back to how it started.'); });
   document.querySelectorAll('[data-theme-set]').forEach(b => b.addEventListener('click', () => { applyTheme(b.dataset.themeSet); writeLS(LS_THEME, b.dataset.themeSet); }));
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   if (mq.addEventListener) mq.addEventListener('change', () => applyTheme(readLS(LS_THEME) || 'auto'));
@@ -1904,7 +1928,7 @@ function start() {
   showTab(readLS(LS_TAB) || 'sections');
   model = C.layout(state);
   renderEditor();
-  bind(); bindLock(); findLock();
+  bind(); bindLock(); findLock(); updateDesignSeg();
   rebuild(false);
   if (viewer) viewer.view('iso');
   window.__robe = { get model() { return model; }, get state() { return state; } };
