@@ -1,0 +1,1917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Master Robe Builder</title>
+<meta name="description" content="Parametric wardrobe: sections, partitions, drawers, hanging, shelves and kickers in a 3798 x 2555 x 600 cavity, with any obstruction in the cavity and its door swing checked live.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workbench. Settings rail on the left, the live model on the right, then the
+   elevation drawing, checks and cut list underneath. One column on phones. */
+:root {
+  --bg: #edebe6; --panel: #f8f7f3; --ink: #1d1f21; --muted: #5d6166; --line: #d3cfc6;
+  --accent: #a8620a; --accent-soft: #f3e3c8; --on-accent: #ffffff; --viewer: #e4e2dc;
+  --good: #2c7146; --warn: #9a5700; --bad: #b0281f;
+  --warn-soft: #f6e7cf; --bad-soft: #f5dcd8; --info-soft: #e7e5df; --good-soft: #dcebdf;
+  --board: #f4f2ec; --board-edge: #2a2b2d; --front: #ffffff; --hang: #2f5fb3; --shelf: #3d8a4f; --oak: #8b6a47;
+  --obs: #b0281f; --obs-soft: #f2d3cf; --dim: #3c4a5c; --wall: #b9b3a8;
+  --display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151617; --panel: #1c1d1f; --ink: #e8e6e1; --muted: #a09d97; --line: #33322f;
+    --accent: #eea83d; --accent-soft: #3a2c15; --on-accent: #1a1206; --viewer: #222325;
+    --good: #6cc48d; --warn: #f0b154; --bad: #ff8a7e; --warn-soft: #3a2c15; --bad-soft: #3d1e1b; --info-soft: #262624; --good-soft: #1b2e22;
+    --board: #2a2b2c; --board-edge: #c9c6bf; --front: #34353a; --hang: #7da4ef; --shelf: #6cc48d; --oak: #b48a5e;
+    --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151617; --panel: #1c1d1f; --ink: #e8e6e1; --muted: #a09d97; --line: #33322f;
+  --accent: #eea83d; --accent-soft: #3a2c15; --on-accent: #1a1206; --viewer: #222325;
+  --good: #6cc48d; --warn: #f0b154; --bad: #ff8a7e; --warn-soft: #3a2c15; --bad-soft: #3d1e1b; --info-soft: #262624; --good-soft: #1b2e22;
+  --board: #2a2b2c; --board-edge: #c9c6bf; --front: #34353a; --hang: #7da4ef; --shelf: #6cc48d; --oak: #b48a5e;
+  --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.4; }
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { min-height: 100%; display: grid; grid-template-rows: auto 1fr; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px 16px; gap: 12px; }
+header.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.brand h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: 0.01em; line-height: 1; text-wrap: balance; }
+.brand .sub { color: var(--muted); font-size: 14px; }
+.brand .sub b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+.hdr-r { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+.work { display: grid; grid-template-columns: minmax(310px, 390px) minmax(0, 1fr); gap: 12px; min-height: 0; }
+.rail { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: auto; max-height: calc(100vh - 90px); min-width: 0; align-self: start; position: sticky; top: env(safe-area-inset-top, 0px); }
+.stage { display: grid; grid-template-rows: minmax(420px, 62vh) auto auto auto auto; gap: 12px; min-width: 0; min-height: 0; }
+
+.tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 2px; padding: 8px 8px 0; background: var(--panel); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: 1 0 auto; border: 0; background: transparent; padding: 8px 10px 9px; font-size: 14px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.pane { padding: 12px 14px 16px; display: grid; gap: 10px; }
+.pane[hidden] { display: none; }
+.pane h3 { margin: 6px 0 0; font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: 0.05em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pane h3:first-child { margin-top: 0; }
+.field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.field label, .lbl { font-size: 14px; }
+.field small, .hint { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.hint b, .field small b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+.num { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.num input { width: 76px; border: 0; background: transparent; padding: 6px 4px 6px 8px; text-align: right; font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.num input::placeholder { color: var(--muted); opacity: 0.85; }
+.num span { padding: 0 8px 0 2px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+.num input:focus { outline: none; }
+.num:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+select { border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); padding: 6px 8px; font-size: 14px; max-width: 200px; }
+input[type=text] { border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); padding: 5px 8px; font-family: var(--mono); font-size: 13px; width: 100%; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.check input { width: 17px; height: 17px; accent-color: var(--accent); }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--bg); }
+.stepper button { border: 0; background: transparent; width: 34px; height: 32px; cursor: pointer; font-size: 18px; }
+.stepper button:hover { background: var(--accent-soft); }
+.stepper output { min-width: 30px; text-align: center; font-family: var(--mono); font-weight: 500; }
+.row-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: var(--r); padding: 6px 11px; cursor: pointer; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.btn.small { font-size: 12.5px; padding: 3px 8px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn.danger:hover { border-color: var(--bad); color: var(--bad); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.seg button { border: 0; background: var(--bg); padding: 5px 9px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+
+/* section cards */
+details.sec { border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+details.sec[open] { background: var(--panel); }
+details.sec.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+details.sec > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+details.sec > summary::-webkit-details-marker { display: none; }
+details.sec > summary b { font-family: var(--display); font-size: 18px; font-weight: 700; min-width: 26px; }
+details.sec > summary .meta { flex: 1; font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 0; }
+.chev { width: 9px; height: 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s; flex: none; }
+details[open] > summary .chev { transform: rotate(45deg); }
+.sec-body { padding: 2px 10px 10px; display: grid; gap: 8px; }
+.mini3 { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.wrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; font-size: 13px; }
+.wrow select { max-width: none; width: 100%; }
+.wrow .num input { width: 72px; } .wrow .num input:disabled { color: var(--muted); }
+.mini3 > label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+.mini3 .num input { width: 100%; }
+.mini3 .num { width: 100%; }
+.zones { display: grid; gap: 4px; }
+.zone { border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 4px; padding: 5px 6px; display: grid; gap: 4px; background: var(--panel); }
+.zone.t-drawers { border-left-color: var(--accent); }
+.zone.t-hang { border-left-color: var(--hang); }
+.zone.t-shelves { border-left-color: var(--shelf); }
+.zh { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.zh select { padding: 4px 6px; font-size: 13px; }
+.zh .num input { width: 64px; padding: 4px 4px 4px 6px; font-size: 13px; }
+.zbtns { margin-left: auto; display: inline-flex; gap: 2px; }
+.zbtns button { border: 1px solid transparent; background: transparent; border-radius: 4px; cursor: pointer; width: 24px; height: 24px; color: var(--muted); font-size: 14px; line-height: 1; }
+.zbtns button:hover { border-color: var(--line); color: var(--ink); }
+.zbtns button.del:hover { color: var(--bad); }
+.zp { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.zp .num input { width: 52px; padding: 3px 4px 3px 6px; font-size: 12.5px; }
+.zp input[type=text] { width: 150px; padding: 3px 6px; font-size: 12px; }
+.dstack { display: flex; flex-direction: column; gap: 3px; width: 100%; padding: 4px 0; }
+.dlab { font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.dchip { display: flex; align-items: center; gap: 4px; }
+.dchip select { flex: 1; max-width: none; padding: 3px 6px; font-size: 12.5px; border-left: 3px solid var(--accent); }
+.dchip button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 15px; width: 22px; }
+.dchip button:hover { color: var(--bad); }
+.zh .num input:disabled { color: var(--muted); }
+.dsizes { display: grid; gap: 6px; }
+.dsize { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.dsize label { display: flex; gap: 4px; align-items: center; }
+.dsize .num input { width: 52px; }
+.zr { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.zone-floor { font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding-left: 6px; }
+.ribs { display: grid; gap: 4px; }
+.rib { display: grid; gap: 3px; padding: 6px 0 2px; border-top: 1px dashed var(--line); font-size: 13.5px; }
+.rh { display: flex; gap: 8px; align-items: baseline; } .rh b { font-family: var(--display); font-size: 16px; } .rh small { flex: 1; min-width: 0; } .rh .check { font-size: 13px; }
+.leaf { display: grid; grid-template-columns: 64px auto minmax(0, 1fr); gap: 6px; align-items: center; } .leaf .ll { font-size: 12px; color: var(--muted); }
+.rib .num input { width: 66px; }
+.rib small { color: var(--muted); font-size: 11.5px; font-family: var(--mono); }
+.rib .row-btns { gap: 3px; }
+
+/* viewer */
+.viewer { position: relative; background: var(--viewer); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; min-height: 360px; }
+.viewer canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.tools { position: absolute; left: 10px; right: 10px; top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.tools .seg, .tools .chips { pointer-events: auto; background: var(--panel); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.chips { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; max-width: 100%; }
+.chips label { display: flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer; border-left: 1px solid var(--line); }
+.chips label:first-child { border-left: 0; }
+.chips input { accent-color: var(--accent); }
+.vbar { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.swing { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 10px; flex: 1 1 300px; max-width: 480px; }
+.swing label { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.swing input[type=range] { flex: 1; accent-color: var(--obs); min-width: 80px; }
+.swing output { font-family: var(--mono); font-size: 13px; min-width: 36px; text-align: right; }
+.front-tag { font-size: 12px; color: var(--ink); background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 4px 8px; border-radius: var(--r); }
+
+/* cards */
+.results { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; }
+.results.one { grid-template-columns: minmax(0, 1fr); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; min-width: 0; }
+.card h2 { margin: 0 0 10px; font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.card h2 small { font-family: var(--body); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 13px; color: var(--muted); }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px 16px; }
+.fig .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.fig .v { font-family: var(--mono); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.fig .v small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.warns { display: grid; gap: 6px; margin-top: 12px; }
+.warn { display: grid; grid-template-columns: 8px 1fr; gap: 8px; font-size: 13.5px; padding: 7px 10px; border-radius: var(--r); background: var(--warn-soft); }
+.warn::before { content: ""; width: 8px; border-radius: 2px; background: var(--warn); }
+.warn.bad { background: var(--bad-soft); } .warn.bad::before { background: var(--bad); }
+.warn.ok { background: var(--good-soft); } .warn.ok::before { background: var(--good); }
+.warn.info { background: var(--info-soft); } .warn.info::before { background: var(--muted); }
+.warn b { font-weight: 600; }
+.out-actions { display: grid; gap: 8px; }
+.out-actions .btn { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 8px; }
+.out-actions .btn span:last-child { font-family: var(--mono); font-size: 12px; opacity: .8; }
+.pwrow { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.pwrow input { flex: 1 1 140px; min-width: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); padding: 6px 8px; font-family: var(--mono); font-size: 14px; }
+.status { font-size: 13px; color: var(--muted); min-height: 1.3em; }
+textarea.io { width: 100%; min-height: 90px; font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); padding: 6px 8px; resize: vertical; }
+
+.tablewrap { overflow-x: auto; }
+table.t { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 520px; }
+table.t th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+table.t td { padding: 4px 6px; border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent); font-variant-numeric: tabular-nums; }
+table.t td.n, table.t th.n { text-align: right; font-family: var(--mono); }
+table.t td.m { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+table.t tr.bad td { color: var(--bad); } table.t tr.warn td { color: var(--warn); }
+
+.drawings { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.side-row { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.drawwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.drawwrap svg { display: block; width: 100%; height: auto; min-width: 900px; }
+.drawwrap.side svg { min-width: 240px; }
+.cap { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+svg .wall { fill: url(#hatch); stroke: var(--wall); stroke-width: 2; }
+svg .p-panel, svg .p-top, svg .p-base, svg .p-shelf, svg .p-back { fill: var(--board); stroke: var(--board-edge); stroke-width: 2.5; }
+svg .p-kick { fill: color-mix(in srgb, var(--board-edge) 18%, var(--board)); stroke: var(--board-edge); stroke-width: 2.5; }
+svg .p-adj { fill: none; stroke: var(--shelf); stroke-width: 3; stroke-dasharray: 18 10; }
+svg .p-rail { fill: var(--hang); stroke: none; }
+svg .p-front { fill: var(--front); stroke: var(--board-edge); stroke-width: 2.5; }
+svg .p-handle { fill: var(--ink); }
+svg .p-obs { fill: var(--obs-soft); stroke: var(--obs); stroke-width: 4; }
+svg .p-swing { fill: color-mix(in srgb, var(--obs) 14%, transparent); stroke: var(--obs); stroke-width: 3; stroke-dasharray: 12 8; }
+svg .p-fascia { fill: color-mix(in srgb, var(--oak) 70%, transparent); stroke: var(--oak); stroke-width: 2; }
+svg .p-sdoor { fill: none; stroke: var(--oak); stroke-width: 3; stroke-dasharray: 30 14; }
+svg .p-ghost { fill: color-mix(in srgb, var(--board-edge) 7%, transparent); stroke: var(--muted); stroke-width: 2; stroke-dasharray: 10 8; }
+svg .hanger { fill: none; stroke: var(--hang); stroke-width: 5; stroke-linejoin: round; }
+svg .secbg { fill: transparent; cursor: pointer; }
+svg .secbg:hover { fill: color-mix(in srgb, var(--accent) 8%, transparent); }
+svg .secbg.sel { fill: color-mix(in srgb, var(--accent) 12%, transparent); }
+svg .dim { stroke: var(--dim); stroke-width: 2; fill: none; }
+svg .dimt { fill: var(--dim); font-family: var(--mono); font-size: 52px; }
+svg .lab { fill: var(--muted); font-family: var(--body); font-size: 44px; }
+svg .labk { fill: var(--ink); font-family: var(--display); font-weight: 600; font-size: 58px; letter-spacing: 1px; }
+svg .labs { fill: var(--obs); font-family: var(--display); font-weight: 600; font-size: 48px; }
+svg .ceil { stroke: var(--wall); stroke-width: 3; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin-right: 5px; border-top: 3px solid; }
+
+.sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-top: 12px; }
+.sheet { border: 1px solid var(--line); border-radius: var(--r); padding: 6px; }
+.sheet .scap { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 2px 4px; font-family: var(--mono); }
+.sheet svg { display: block; width: 100%; height: auto; }
+.sheet svg .board { fill: var(--bg); stroke: var(--muted); stroke-width: 3; }
+.sheet svg .pc { fill: color-mix(in srgb, var(--accent) 22%, var(--panel)); stroke: var(--ink); stroke-width: 3; }
+.sheet svg text { fill: var(--ink); font-family: var(--mono); }
+.split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; }
+details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent); margin-top: 10px; }
+
+@media (max-width: 960px) {
+  .side-row { grid-template-columns: minmax(0, 1fr); }
+  .work { grid-template-columns: minmax(0, 1fr); }
+  .rail { max-height: none; order: 2; position: static; overflow: visible; }
+  .stage { display: contents; }
+  .viewer { order: 1; height: 58vh; }
+  .stage > :not(.viewer) { order: 3; }
+  .results, .drawings, .split { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) { header.top { grid-template-columns: minmax(0, 1fr); } .hdr-r { justify-content: flex-start; } .brand h1 { font-size: 26px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Master Robe Builder</h1>
+      <div class="sub">Cavity <b id="hdr-size">3798 x 2555 x 600</b>, <span id="hdr-sec">7 sections</span>. Edit anything on the left; the model, drawing, checks and cut list follow.</div>
+    </div>
+    <div class="hdr-r">
+      <button type="button" class="btn" id="hdr-unlock" hidden>Unlock my design</button>
+      <select id="preset" aria-label="Load a design">
+        <option value="">Load a design...</option>
+        <option value="mine">Reworked design</option>
+        <option value="rev01">Creative by Design rev.01, as quoted</option>
+      </select>
+      <div class="seg" role="group" aria-label="Theme" id="theme-seg">
+        <button type="button" data-theme-set="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="work">
+    <aside class="rail" aria-label="Settings" id="rail">
+      <div class="tabs" role="tablist" aria-label="Settings">
+        <button type="button" role="tab" data-tab="sections" aria-selected="true">Sections</button>
+        <button type="button" role="tab" data-tab="cavity" aria-selected="false">Cavity</button>
+        <button type="button" role="tab" data-tab="obs" aria-selected="false" id="tab-obs">Obstruction</button>
+        <button type="button" role="tab" data-tab="doors" aria-selected="false">Doors</button>
+        <button type="button" role="tab" data-tab="build" aria-selected="false">Materials</button>
+      </div>
+      <div class="pane" data-pane="sections" id="pane-sections"></div>
+      <div class="pane" data-pane="cavity" id="pane-cavity" hidden></div>
+      <div class="pane" data-pane="obs" id="pane-obs" hidden></div>
+      <div class="pane" data-pane="doors" id="pane-doors" hidden></div>
+      <div class="pane" data-pane="build" id="pane-build" hidden></div>
+    </aside>
+
+    <section class="stage">
+      <div class="viewer" id="viewer">
+        <div class="tools">
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" data-view="iso" aria-pressed="true">3D</button>
+            <button type="button" data-view="front" aria-pressed="false">Front</button>
+            <button type="button" data-view="side" aria-pressed="false">Side</button>
+            <button type="button" data-view="top" aria-pressed="false">Top</button>
+          </div>
+          <div class="chips" role="group" aria-label="Show">
+            <label><input type="checkbox" id="v-doors"> Sliding doors</label>
+            <label><input type="checkbox" id="v-fascia" checked> Fascia</label>
+            <label id="chip-swing"><input type="checkbox" id="v-swing" checked> Door swing</label>
+            <label><input type="checkbox" id="v-open"> Drawers open</label>
+          </div>
+        </div>
+        <div class="vbar">
+          <div class="swing" id="swing-bar">
+            <label for="obs-angle" id="obs-angle-l">Door</label>
+            <input type="range" id="obs-angle" min="0" max="90" step="1" value="90" aria-label="Door opening angle">
+            <output id="obs-out">90°</output>
+          </div>
+          <div class="front-tag" id="front-tag">Drag to orbit, right-drag to pan, scroll to zoom. Click a drawer to open it; drag a sliding door to slide it.</div>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="card">
+          <h2>This design <small id="sum-note"></small></h2>
+          <div class="figs" id="figs"></div>
+          <div class="warns" id="warns"></div>
+        </div>
+        <div class="card" id="obs-card">
+          <h2><span id="obs-title">Obstruction</span> <small id="obs-note"></small></h2>
+          <div class="tablewrap"><table class="t" id="obs-table" style="min-width:0"></table></div>
+          <div class="hint" id="obs-hint" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Elevation <small>from the room; click a section to edit it</small></h2>
+        <div class="drawings">
+          <div>
+            <div class="drawwrap" id="elev"></div>
+            <div class="legend">
+              <span><i style="border-color:var(--board-edge)"></i>carcass</span>
+              <span><i style="border-color:var(--shelf);border-top-style:dashed"></i>adjustable shelf</span>
+              <span><i style="border-color:var(--hang)"></i>hanging rail</span>
+              <span id="leg-obs"><i style="border-color:var(--obs);border-top-style:dashed"></i><span id="leg-obs-t">door swing</span></span>
+              <span><i style="border-color:var(--oak)"></i>fascia / sliding doors</span>
+            </div>
+          </div>
+          <div class="side-row" id="side-row">
+            <div class="drawwrap side" id="side"></div>
+            <div class="cap" id="side-cap"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Cut list <small id="cut-note"></small></h2>
+        <div class="split">
+          <div class="tablewrap"><table class="t" id="cut-table"></table></div>
+          <div>
+            <h2 style="font-size:15px">Hardware</h2>
+            <div class="tablewrap"><table class="t" id="hw-table" style="min-width:0"></table></div>
+          </div>
+        </div>
+        <details class="more" id="sheets-more"><summary>Sheet layouts</summary><div class="sheets" id="sheets"></div></details>
+      </div>
+
+      <div class="card">
+        <h2>Files and settings</h2>
+        <div class="split">
+          <div class="out-actions">
+            <button type="button" class="btn primary" id="copy-csv"><span>Copy cut list as CSV</span><span>spreadsheet</span></button>
+            <button type="button" class="btn" id="copy-json"><span>Copy settings</span><span>JSON</span></button>
+            <button type="button" class="btn" id="dl-json"><span>Save settings file</span><span>.json</span></button>
+            <div class="status" id="status" role="status"></div>
+          </div>
+          <div>
+            <label for="io" class="lbl">Paste settings to load them</label>
+            <textarea class="io" id="io" placeholder='{"W": 3798, ...}'></textarea>
+            <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="load-json">Load pasted settings</button><button type="button" class="btn small danger" id="reset">Back to the reworked design</button></div>
+          </div>
+        </div>
+        <div class="lockbox" id="lockbox">
+          <h2 style="font-size:15px;margin-top:16px">Locked design</h2>
+          <div id="unlock-row" hidden>
+            <label for="pw-open" class="lbl">This site holds a locked design. Enter its password to load it.</label>
+            <div class="pwrow"><input type="password" id="pw-open" autocomplete="current-password" aria-label="Password for the locked design"><button type="button" class="btn primary" id="unlock">Unlock</button></div>
+          </div>
+          <div class="hint" id="lock-none">No locked design on this site. You can make one below.</div>
+          <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="lock-again">Forget my design on this device</button></div>
+          <details class="more"><summary>Encrypt this design for publishing</summary>
+            <div class="hint" style="margin:8px 0">Encrypts everything on this page (cavity, sections, partitions, everything in the Obstruction tab, even its name) with a password, here in your browser; the password goes nowhere. Save the result as <b>design.lock.json</b> next to index.html. Use a long password, 4 or more random words: anyone can copy the file and try passwords against it.</div>
+            <div class="pwrow"><input type="password" id="pw-new" autocomplete="new-password" placeholder="Password" aria-label="New password"><input type="password" id="pw-new2" autocomplete="new-password" placeholder="Repeat it" aria-label="Repeat the password"><button type="button" class="btn" id="encrypt">Encrypt</button></div>
+            <textarea class="io" id="lock-out" readonly placeholder="The encrypted design appears here" style="margin-top:6px"></textarea>
+            <div class="row-btns" style="margin-top:6px"><button type="button" class="btn small" id="copy-lock">Copy encrypted design</button><button type="button" class="btn small" id="dl-lock">Save design.lock.json</button></div>
+          </details>
+          <div class="status" id="lock-status" role="status"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* Core: parameters, layout, parts, checks, cut list, nesting. Pure JS, no DOM.
+   Units mm. Axes: x from the LEFT wall (as you face the wardrobe), y from the BACK wall toward the room, z up from the floor. */
+(function (root) {
+'use strict';
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const Zh = (h, drop) => ({ type: 'hang', h, drop: drop === undefined ? null : drop });
+const Zd = (list) => ({ type: 'drawers', h: null, mode: 'sized', list, n: list.length, hs: '' });
+const M4J = ['main', 'main', 'main', 'main', 'jewel'];
+const Zs = (h, n) => ({ type: 'shelves', h, n });
+const sec = (w, top, zones, kick) => ({ w, wMode: w === null ? 'auto' : 'fixed', link: null, top, kick: kick !== false, zones });
+
+// The reworked design: the company's widths and contents, six sections at the high level.
+const MINE = {
+  W: 3798, H: 2555, wallDepth: 510, extraDepth: 90,
+  depth: 447, sideGapL: 1.5, sideGapR: 1.5, backGap: 0, mainTop: 2148,
+  T: 16, Tdf: 16, Tdb: 16, Tdbb: 16, Tback: 16, Tkick: 16, backs: false, topMode: 'continuous',
+  kickH: 60, kickSet: 20, adjSet: 20, adjGap: 1, railDrop: 50,
+  dGap: 3, runnerLen: 400, runnerSide: 13, boxLess: 35, frontSet: 0, handleProud: 30, frontExtra: 35,
+  // drawer sizes by box height (the quote: 185 x 400 and 121 x 400 Nover Krome); a blank front is the box plus frontExtra
+  drawerSizes: [{ id: 'main', name: 'Main', box: 185, front: null }, { id: 'jewel', name: 'Jewellery', box: 121, front: null }],
+  sections: [
+    sec(391.5, null, [Zh(1482), Zs(null, 2)]),
+    // S2 balances: it gives up the 16 mm P2's doubling adds on the left, so the drawer bank stays on the centre line
+    Object.assign(sec(527, null, [Zh(1000), Zh(null)]), { wMode: 'balance' }),
+    // the drawer bank: S3 takes what is left, S4 and S5 are locked to it, so the three columns are always equal
+    sec(null, null, [Zd(M4J), Zs(null, 3)]),
+    Object.assign(sec(null, null, [Zd(['main', 'main', 'main', 'main']), Zh(null)]), { wMode: 'link', link: 2 }),
+    Object.assign(sec(null, null, [Zd(M4J), Zs(null, 3)]), { wMode: 'link', link: 2 }),
+    sec(527, null, [Zh(1000), Zh(null)]),
+    Object.assign(sec(null, null, [Zh(1482), Zs(null, 2)]), { wMode: 'link', link: 0 }),
+  ],
+  // partitions 1, 2, 4, 5 and 8 doubled
+  panels: [{ double: true }, { double: true }, {}, { double: true }, { double: true }, {}, {}, { double: true }],
+  box: { show: false, label: 'Obstruction', xRight: 600, w: 300, z0: 1500, h: 300, d: 100, y0: 0, doorT: 14, doorL: null, maxAngle: 90, minClear: 10, gapP: 20 },
+  front: { doors: true, n: 4, zone: 90, rail: null, outer: 'oak', overlap: 30, doorT: 30, fascia: true, fasciaH: 115, finishes: ['oak', 'mirror', 'mirror', 'oak'] },
+  sheet: { L: 3600, W: 1800, kerf: 4, trim: 10 },
+};
+// Creative by Design rev.01 as quoted: the first two sections at 2032, the rest at 2148, no rib above the tops,
+// 11 x 185 and 2 x 121 drawers
+const REV01 = (() => {
+  const p = clone(MINE);
+  p.sections[0].top = 2032; p.sections[0].zones = [Zh(1482), Zs(null, 1)];
+  p.sections[1].top = 2032;
+  // their widths; partitions 1, 3, 4, 5 and 8 doubled, none above the tops
+  p.sections[0].wMode = 'fixed'; p.sections[0].w = 407.5;
+  p.sections[1].wMode = 'fixed'; p.sections[1].w = 527; p.sections[5] = Object.assign(p.sections[5], { wMode: 'fixed', w: 527 }); p.sections[6] = Object.assign(p.sections[6], { wMode: 'fixed', w: 407.5 });
+  p.panels = [0, 1, 2, 3, 4, 5, 6, 7].map(j => ({ double: [0, 2, 3, 4, 7].includes(j) }));
+  // S4: an open cubby at the bottom, then three 185 drawers whose top lines up with the 121s in S3 and S5
+  // (4 x 220 + 156 fronts + 6 gaps = 1054 = 366 cubby + 16 shelf + 3 x 220 + 4 gaps)
+  p.sections[3].zones = [Zs(366, 1), Zd(['main', 'main', 'main']), Zh(null)];
+  return p;
+})();
+const PRESETS = { mine: MINE, rev01: REV01 };
+
+function normalize(p) {
+  const P = Object.assign(clone(MINE), p ? clone(p) : {});
+  P.box = Object.assign(clone(MINE.box), P.box || {});
+  P.front = Object.assign(clone(MINE.front), P.front || {});
+  P.sheet = Object.assign(clone(MINE.sheet), P.sheet || {});
+  const num = (o, k, lo, hi, d) => { let v = Number(o[k]); if (!isFinite(v)) v = d; o[k] = Math.min(hi, Math.max(lo, v)); };
+  const nnum = (o, k, lo, hi) => { if (o[k] === null || o[k] === undefined || o[k] === '') { o[k] = null; return; } let v = Number(o[k]); if (!isFinite(v)) { o[k] = null; return; } o[k] = Math.min(hi, Math.max(lo, v)); };
+  num(P, 'W', 600, 8000, 3798); num(P, 'H', 1200, 3600, 2555); num(P, 'wallDepth', 100, 1500, 510); num(P, 'extraDepth', 0, 600, 90);
+  num(P, 'depth', 150, 1500, 447); num(P, 'sideGapL', 0, 100, 1.5); num(P, 'sideGapR', 0, 100, 1.5); num(P, 'backGap', 0, 200, 0); num(P, 'mainTop', 300, 3600, 2148);
+  for (const k of ['T', 'Tdf', 'Tdb', 'Tdbb', 'Tback', 'Tkick']) num(P, k, 3, 40, 16);
+  num(P, 'kickH', 0, 300, 60); num(P, 'kickSet', 0, 200, 20); num(P, 'adjSet', 0, 200, 20); num(P, 'adjGap', 0, 10, 1); num(P, 'railDrop', 20, 200, 50);
+  num(P, 'dGap', 0, 20, 3); num(P, 'runnerLen', 150, 900, 400); num(P, 'runnerSide', 0, 50, 13); num(P, 'boxLess', 0, 200, 35); num(P, 'frontSet', 0, 100, 0); num(P, 'handleProud', 0, 80, 30); num(P, 'frontExtra', 0, 200, 35);
+  if (!['continuous', 'between'].includes(P.topMode)) P.topMode = 'continuous';
+  P.backs = !!P.backs;
+  if (!Array.isArray(P.drawerSizes) || !P.drawerSizes.length) P.drawerSizes = clone(MINE.drawerSizes);
+  const seen = new Set();
+  P.drawerSizes = P.drawerSizes.slice(0, 8).map((d, i) => {
+    d = Object.assign({ id: 's' + i, name: 'Size ' + (i + 1), box: 150, front: null }, d);
+    d.id = String(d.id); while (seen.has(d.id)) d.id += 'x'; seen.add(d.id);
+    d.name = String(d.name).slice(0, 24); num(d, 'box', 20, 600, 150); nnum(d, 'front', 30, 800);
+    return d;
+  });
+  const sizeIds = P.drawerSizes.map(d => d.id);
+  if (!Array.isArray(P.sections) || !P.sections.length) P.sections = clone(MINE.sections);
+  P.sections = P.sections.slice(0, 14).map(s => {
+    s = Object.assign({ w: null, top: null, kick: true, zones: [] }, s);
+    nnum(s, 'w', 50, 4000); nnum(s, 'top', 200, 3600); s.kick = s.kick !== false;
+    if (!['fixed', 'auto', 'link', 'obs', 'balance'].includes(s.wMode)) s.wMode = s.w === null ? 'auto' : 'fixed';
+    if (s.wMode === 'fixed' && s.w === null) s.wMode = 'auto';
+    s.link = s.link === null || s.link === undefined || !isFinite(Number(s.link)) ? null : Math.round(Number(s.link));
+    if (s.wMode === 'link' && s.link === null) s.wMode = 'auto';
+    if (!Array.isArray(s.zones) || !s.zones.length) s.zones = [Zh(null)];
+    s.zones = s.zones.slice(0, 12).map(z => {
+      z = Object.assign({ type: 'open', h: null }, z);
+      if (!['drawers', 'hang', 'shelves', 'open'].includes(z.type)) z.type = 'open';
+      nnum(z, 'h', 20, 3600);
+      if (z.type === 'drawers') {
+        num(z, 'n', 1, 12, 3); z.n = Math.round(z.n); z.hs = String(z.hs || '');
+        if (!['sized', 'equal'].includes(z.mode)) z.mode = 'sized';
+        if (!Array.isArray(z.list)) z.list = [];
+        z.list = z.list.map(id => sizeIds.includes(id) ? id : sizeIds[0]).slice(0, 14);
+        if (!z.list.length) z.list = Array.from({ length: z.n }, () => sizeIds[0]);
+      }
+      if (z.type === 'shelves') { num(z, 'n', 0, 12, 2); z.n = Math.round(z.n); }
+      if (z.type === 'hang') nnum(z, 'drop', 20, 300);
+      return z;
+    });
+    return s;
+  });
+  const n = P.sections.length;
+  if (!Array.isArray(P.panels)) P.panels = [];
+  while (P.panels.length < n + 1) P.panels.splice(Math.max(0, P.panels.length - 1), 0, { h: null });
+  P.panels = P.panels.slice(0, n + 1).map(q => { q = Object.assign({ h: null, h2: null, double: false }, q); nnum(q, 'h', 50, 3600); nnum(q, 'h2', 50, 3600); q.double = !!q.double; return q; });
+  const B = P.box;
+  B.show = B.show !== false; B.label = String(B.label || 'Obstruction').slice(0, 30);
+  num(B, 'xRight', 0, 8000, 600); num(B, 'w', 10, 2000, 300); num(B, 'z0', 0, 3600, 1500); num(B, 'h', 10, 2000, 300); num(B, 'd', 5, 1000, 100); num(B, 'y0', 0, 1000, 0);
+  num(B, 'doorT', 0, 100, 14); nnum(B, 'doorL', 5, 2000); num(B, 'maxAngle', 0, 180, 90); num(B, 'minClear', 0, 200, 10); num(B, 'gapP', 0, 300, 20);
+  const F = P.front;
+  F.doors = F.doors !== false; F.fascia = F.fascia !== false;
+  num(F, 'n', 1, 8, 4); F.n = Math.round(F.n); num(F, 'zone', 0, 400, 90); if (!['oak', 'mirror', 'alternate'].includes(F.outer)) F.outer = 'oak'; nnum(F, 'rail', 200, 8000); num(F, 'overlap', 0, 200, 30); num(F, 'doorT', 5, 80, 30); num(F, 'fasciaH', 0, 800, 115);
+  if (!Array.isArray(F.finishes)) F.finishes = [];
+  for (let i = 0; i < F.n; i++) if (!['oak', 'mirror'].includes(F.finishes[i])) F.finishes[i] = (i === 0 || i === F.n - 1) ? 'oak' : 'mirror';
+  F.finishes = F.finishes.slice(0, F.n);
+  const S = P.sheet;
+  num(S, 'L', 500, 6000, 3600); num(S, 'W', 300, 3000, 1800); num(S, 'kerf', 0, 10, 4); num(S, 'trim', 0, 50, 10);
+  return P;
+}
+
+/* ------------------------------------------------------------------ 2D geometry */
+function hull(pts) {
+  const P = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const p of P) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 1e-9) lo.pop(); lo.push(p); }
+  for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 1e-9) up.pop(); up.push(p); }
+  up.pop(); lo.pop();
+  return lo.concat(up);
+}
+function segPt(p, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+  const t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)) : 0;
+  return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+}
+// distance between convex polygons; negative = they overlap by that much
+function polyDist(A, B) {
+  let pen = Infinity;
+  for (const Q of [A, B]) for (let i = 0; i < Q.length; i++) {
+    const a = Q[i], b = Q[(i + 1) % Q.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (l < 1e-9) continue;
+    const nx = -(b[1] - a[1]) / l, ny = (b[0] - a[0]) / l;
+    let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+    for (const p of A) { const d = p[0] * nx + p[1] * ny; a0 = Math.min(a0, d); a1 = Math.max(a1, d); }
+    for (const p of B) { const d = p[0] * nx + p[1] * ny; b0 = Math.min(b0, d); b1 = Math.max(b1, d); }
+    const o = Math.min(a1, b1) - Math.max(a0, b0);
+    if (o <= 0) {
+      let d = Infinity;
+      for (let j = 0; j < A.length; j++) for (let k = 0; k < B.length; k++) {
+        d = Math.min(d, segPt(A[j], B[k], B[(k + 1) % B.length]), segPt(B[k], A[j], A[(j + 1) % A.length]));
+      }
+      return d;
+    }
+    pen = Math.min(pen, o);
+  }
+  return -pen;
+}
+function aabbDist(a, b) {
+  const gx = Math.max(a.x0 - b.x1, b.x0 - a.x1), gy = Math.max(a.y0 - b.y1, b.y0 - a.y1), gz = Math.max(a.z0 - b.z1, b.z0 - a.z1);
+  if (gx > 0 || gy > 0 || gz > 0) return Math.hypot(Math.max(0, gx), Math.max(0, gy), Math.max(0, gz));
+  return Math.max(gx, gy, gz);
+}
+const rectYZ = (p) => [[p.y0, p.z0], [p.y1, p.z0], [p.y1, p.z1], [p.y0, p.z1]];
+
+/* The obstruction's door: a plate doorT thick covering the box's front, hinged at its bottom edge on a pivot half a
+   door thickness inside and below the front bottom corner. Open 90 deg it lies flat, sticking out doorL in front of the
+   box with its underside doorT below the box's bottom. */
+function obsGeom(P) {
+  const B = P.box, x1 = B.xRight, x0 = x1 - B.w, L = B.doorL || B.h, p = B.doorT, yf = B.y0 + B.d, zb = B.z0;
+  const piv = [yf - p / 2, zb - p / 2];
+  const closed = [[yf - p, zb], [yf, zb], [yf, zb + L], [yf - p, zb + L]];
+  const at = (deg) => {
+    const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+    return closed.map(([y, z]) => { const dy = y - piv[0], dz = z - piv[1]; return [piv[0] + dy * c + dz * s, piv[1] - dy * s + dz * c]; });
+  };
+  const pts = [];
+  for (let d = 0; d <= B.maxAngle + 1e-9; d += 1.5) pts.push(...at(d));
+  pts.push(...at(B.maxAngle));
+  const env = hull(pts);
+  return { x0, x1, y0: B.y0, y1: yf, z0: zb, z1: zb + B.h, L, p, piv, at, env,
+    envLow: Math.min(...env.map(q => q[1])), envReach: Math.max(...env.map(q => q[0])), openLow: Math.min(...at(B.maxAngle).map(q => q[1])) };
+}
+
+/* ------------------------------------------------------------------ layout */
+function parseList(s) { return String(s || '').split(/[\s,;]+/).map(Number).filter(v => isFinite(v) && v > 0); }
+
+function layout(raw) {
+  const P = normalize(raw), T = P.T, n = P.sections.length;
+  const D = P.wallDepth + P.extraDepth;
+  const yc0 = P.backGap, yc1 = P.backGap + P.depth, yIn = yc0 + (P.backs ? P.Tback : 0), dIn = yc1 - yIn;
+  const xL = P.sideGapL, xR = P.W - P.sideGapR;
+  // partitions: one board, or two side by side (doubled, where two carcasses meet)
+  const tw = P.panels.map(q => q.double ? 2 * T : T);
+  const avail = xR - xL - tw.reduce((a, b) => a + b, 0);
+  // section widths: fixed, auto (share what is left), the same as another section, ending just past the obstruction,
+  // or balancing: sized so the middle of the run (the middle section, or the middle partition) sits on the centre line
+  const rootOf = P.sections.map((_, i) => { let k = i, g = 0; while (P.sections[k].wMode === 'link' && g++ < 20) { const t = P.sections[k].link; if (t === null || t === k || t < 0 || t >= n) break; k = t; } return k; });
+  const balRoots = P.sections.map((sc, k) => sc.wMode === 'balance' ? k : -1).filter(k => k >= 0);
+  const solve = (dBal) => {
+    const kind = rootOf.map(k => P.sections[k].wMode === 'link' ? 'auto' : P.sections[k].wMode);
+    const known = new Array(n).fill(null), obsFit = [];
+    rootOf.forEach((k, i) => {
+      if (kind[i] === 'fixed') known[i] = P.sections[k].w;
+      if (kind[i] === 'balance') known[i] = (P.sections[k].w === null ? 500 : P.sections[k].w) + dBal;
+    });
+    for (let k = 0; k < n; k++) {
+      if (P.sections[k].wMode !== 'obs') continue;
+      const ok = P.box.show && rootOf.slice(0, k).every((r, q) => known[q] !== null);
+      if (ok) {
+        let left = xL; for (let q = 0; q < k; q++) left += tw[q] + known[q];
+        const w = P.box.xRight + P.box.gapP - (left + tw[k]);
+        rootOf.forEach((r, i) => { if (r === k) known[i] = w; });
+        obsFit.push({ k, ok: true, w });
+      } else { obsFit.push({ k, ok: false, why: P.box.show ? 'a section to its left is auto or linked to an auto one' : 'the obstruction is turned off' }); rootOf.forEach((r, i) => { if (r === k) kind[i] = 'auto'; }); }
+    }
+    let fixed = 0, autos = 0;
+    known.forEach(v => { if (v === null) autos++; else fixed += v; });
+    const autoW = autos ? (avail - fixed) / autos : 0;
+    const widths = known.map(v => v === null ? autoW : v);
+    const px = [xL];
+    for (let i = 0; i < n; i++) px.push(px[i] + tw[i] + widths[i]);
+    const mid = n % 2 ? (px[(n - 1) / 2] + tw[(n - 1) / 2] + px[(n + 1) / 2]) / 2 : px[n / 2] + tw[n / 2] / 2;
+    return { obsFit, autos, autoW, widths, px, off: mid - P.W / 2 };
+  };
+  let sol = solve(0), balance = null;
+  if (balRoots.length) {
+    const s1 = solve(100), slope = (s1.off - sol.off) / 100;
+    if (Math.abs(slope) > 1e-6) { const d = -sol.off / slope; sol = solve(d); balance = { ok: true, d }; }
+    else balance = { ok: false };
+  }
+  const { obsFit, autos, autoW, widths, px } = sol;
+  const leftover = avail - widths.reduce((a, b) => a + b, 0);
+  const tops = P.sections.map(s => s.top === null ? P.mainTop : s.top);
+  const parts = [], computed = {}, notes = [];
+  let pid = 0;
+  const put = (o) => { o.id = 'p' + (pid++); parts.push(o); return o; };
+  const cont = P.topMode === 'continuous';
+
+  // partitions (P1 = left end panel ... Pn+1 = right end): each leaf stands from the floor. Auto height stops under the
+  // top beside it; a doubled partition's leaves each follow their own section, so it can step between two levels.
+  const ribs = [], partitions = [];
+  for (let j = 0; j <= n; j++) {
+    const q = P.panels[j], x0 = px[j], hmaxAll = Math.max(...[tops[j - 1], tops[j]].filter(v => v !== undefined));
+    const own = (a, b) => a !== undefined ? a : b;
+    const defs = q.double
+      ? [{ leaf: 0, key: 'h', custom: q.h, hmax: own(tops[j - 1], tops[j]), x0, x1: x0 + T }, { leaf: 1, key: 'h2', custom: q.h2, hmax: own(tops[j], tops[j - 1]), x0: x0 + T, x1: x0 + 2 * T }]
+      : [{ leaf: null, key: 'h', custom: q.h, hmax: hmaxAll, x0, x1: x0 + T }];
+    const end = j === 0 ? ', left end' : j === n ? ', right end' : '';
+    const leaves = defs.map(L => {
+      L.covered = L.custom === null && cont;
+      L.h = L.custom !== null ? L.custom : cont ? L.hmax - T : L.hmax;
+      L.j = j; L.name = `P${j + 1}${L.leaf === null ? '' : L.leaf ? ' right leaf' : ' left leaf'}${end}`;
+      computed[`panels.${j}.${L.key}`] = L.h;
+      put({ kind: 'panel', name: L.name, cutName: end ? 'End panel' : 'Partition', x0: L.x0, x1: L.x1, y0: yc0, y1: yc1, z0: 0, z1: L.h, cut: { L: L.h, W: P.depth, T }, rib: j, where: `P${j + 1}` });
+      ribs.push(L);
+      return L;
+    });
+    partitions.push({ j, x0, x1: x0 + tw[j], t: tw[j], double: q.double, leaves });
+  }
+  // tops
+  if (cont) {
+    let i = 0;
+    while (i < n) {
+      let k = i;
+      while (k + 1 < n && Math.abs(tops[k + 1] - tops[i]) < 0.01 && !partitions[k + 1].double && partitions[k + 1].leaves.every(L => L.covered)) k++;
+      // the top runs over every leaf at its edges that stops under it (both leaves of a doubled end panel)
+      const top = tops[i], under = (L) => L.covered && Math.abs(L.hmax - top) < 0.01;
+      // an end panel's leaves all belong to this carcass; an inner doubled partition's far leaf belongs to the next one
+      const ll = partitions[i].leaves.slice().reverse().slice(0, i === 0 ? 2 : 1), rl = partitions[k + 1].leaves.slice(0, k + 1 === n ? 2 : 1);
+      let x0 = ll[0].x1, x1 = rl[0].x0;
+      for (const L of ll) { if (!under(L)) break; x0 = L.x0; }
+      for (const L of rl) { if (!under(L)) break; x1 = L.x1; }
+      const where = i === k ? `S${i + 1}` : `S${i + 1}-S${k + 1}`;
+      put({ kind: 'top', name: `Top over ${where}`, cutName: 'Top', x0, x1, y0: yc0, y1: yc1, z0: top - T, z1: top, cut: { L: x1 - x0, W: P.depth, T }, sec: i, where });
+      i = k + 1;
+    }
+  } else for (let i = 0; i < n; i++) {
+    put({ kind: 'top', name: `S${i + 1} top`, cutName: 'Top', x0: px[i] + tw[i], x1: px[i + 1], y0: yc0, y1: yc1, z0: tops[i] - T, z1: tops[i], cut: { L: widths[i], W: P.depth, T }, sec: i, where: `S${i + 1}` });
+  }
+
+  // sections
+  const secs = [];
+  let drawerCount = 0, railTotal = 0, adjCount = 0;
+  const sizes = new Map(P.drawerSizes.map(d => [d.id, d])), bySize = new Map();
+  const sizeOf = (id) => sizes.get(id) || P.drawerSizes[0], frontOf = (d) => d.front === null ? d.box + P.frontExtra : d.front;
+  P.drawerSizes.forEach((d, i) => { computed[`drawerSizes.${i}.front`] = frontOf(d); });
+  P.sections.forEach((s, i) => {
+    const cx0 = px[i] + tw[i], cx1 = px[i + 1], cw = widths[i], top = tops[i], W = `S${i + 1}`;
+    const zb0 = s.kick ? P.kickH : 0, zi0 = zb0 + T, zi1 = top - T;
+    const info = { i, cx0, cx1, cw, top, zb0, zi0, zi1, kick: s.kick, zones: [], pitch: 0 };
+    computed[`sections.${i}.w`] = cw; computed[`sections.${i}.top`] = top;
+    if (s.kick && P.kickH > 0) put({ kind: 'kick', name: `${W} kicker`, cutName: 'Kicker', x0: cx0, x1: cx1, y0: yc1 - P.kickSet - P.Tkick, y1: yc1 - P.kickSet, z0: 0, z1: P.kickH, cut: { L: cw, W: P.kickH, T: P.Tkick }, sec: i, where: W });
+    put({ kind: 'base', name: `${W} base`, cutName: 'Base', x0: cx0, x1: cx1, y0: yIn, y1: yc1, z0: zb0, z1: zb0 + T, cut: { L: cw, W: dIn, T }, sec: i, where: W });
+    if (P.backs) put({ kind: 'back', name: `${W} back`, cutName: 'Back panel', x0: cx0, x1: cx1, y0: yc0, y1: yc0 + P.Tback, z0: zb0, z1: top, cut: { L: top - zb0, W: cw, T: P.Tback }, sec: i, where: W });
+    const zs = s.zones, m = zs.length, space = zi1 - zi0 - (m - 1) * T;
+    // drawers sized by their box heights set their own zone height; everything else is a given height or fills
+    const sized = zs.map(z => z.type === 'drawers' && z.mode === 'sized');
+    const natural = zs.map((z, k) => sized[k] ? z.list.reduce((a, id) => a + frontOf(sizeOf(id)), 0) + (z.list.length + 1) * P.dGap : z.h);
+    let fills = zs.map((z, k) => !sized[k] && z.h === null ? k : -1).filter(k => k >= 0);
+    if (!fills.length) { const c = zs.map((_, k) => k).filter(k => !sized[k]); if (c.length) fills = [c[c.length - 1]]; }
+    const fixedH = natural.reduce((a, h, k) => a + (fills.includes(k) ? 0 : h), 0);
+    const fillH = fills.length ? (space - fixedH) / fills.length : null;
+    info.fillH = fillH; info.space = space; info.spare = fills.length ? 0 : space - fixedH;
+    let z = zi0;
+    zs.forEach((zn, k) => {
+      const h = fills.includes(k) ? fillH : natural[k], z0 = z, z1 = z + h;
+      const zi = { k, type: zn.type, z0, z1, h, fill: fills.includes(k) };
+      computed[`sections.${i}.zones.${k}.h`] = h;
+      if (zn.type === 'drawers') {
+        const g = P.dGap;
+        let defs;
+        if (sized[k]) { defs = zn.list.map(sid => { const d = sizeOf(sid); return { fh: frontOf(d), bh: d.box, size: d }; }); zi.mismatch = 0; }
+        else {
+          const nn = zn.n, given = parseList(zn.hs).slice(0, nn), r = nn - given.length;
+          const rest = h - (nn + 1) * g - given.reduce((a, b) => a + b, 0), each = r ? rest / r : 0;
+          zi.mismatch = r ? 0 : rest;
+          defs = Array.from({ length: nn }, (_, f) => { const fh = f < given.length ? given[f] : each; return { fh, bh: Math.max(20, fh - P.boxLess), size: null }; });
+        }
+        zi.fronts = []; zi.sized = sized[k];
+        let fz = z0 + g;
+        for (let f = 0; f < defs.length; f++) {
+          const fh = defs[f].fh, bh = defs[f].bh, sz = defs[f].size, id = `d-${i}-${k}-${f}`;
+          const yf1 = yc1 - P.frontSet, yf0 = yf1 - P.Tdf;
+          zi.fronts.push({ z0: fz, z1: fz + fh, h: fh, id, box: bh, size: sz ? sz.name : null });
+          const sk = sz ? `${sz.name}|${sz.box}` : `|${Math.round(bh)}`; bySize.set(sk, (bySize.get(sk) || 0) + 1);
+          put({ kind: 'front', name: `${W} drawer front`, cutName: 'Drawer front', x0: cx0 + g, x1: cx1 - g, y0: yf0, y1: yf1, z0: fz, z1: fz + fh, cut: { L: cw - 2 * g, W: fh, T: P.Tdf }, sec: i, drawer: id, where: W });
+          const hc = (fz + fz + fh) / 2, hx = (cx0 + cx1) / 2;
+          put({ kind: 'handle', name: 'Handle', x0: hx - 88, x1: hx + 88, y0: yf1, y1: yf1 + P.handleProud, z0: hc - 6, z1: hc + 6, sec: i, drawer: id, hw: true });
+          const bw = cw - 2 * P.runnerSide, bx0 = cx0 + P.runnerSide, bx1 = bx0 + bw, by1 = yf0, by0 = by1 - P.runnerLen, bz0 = fz + Math.max(0, Math.min((fh - bh) / 2, 15)), Tb = P.Tdb;
+          put({ kind: 'dbox', name: `${W} drawer side`, cutName: 'Drawer side', x0: bx0, x1: bx0 + Tb, y0: by0, y1: by1, z0: bz0, z1: bz0 + bh, cut: { L: P.runnerLen, W: bh, T: Tb }, sec: i, drawer: id, where: W });
+          put({ kind: 'dbox', name: `${W} drawer side`, cutName: 'Drawer side', x0: bx1 - Tb, x1: bx1, y0: by0, y1: by1, z0: bz0, z1: bz0 + bh, cut: { L: P.runnerLen, W: bh, T: Tb }, sec: i, drawer: id, where: W });
+          put({ kind: 'dbox', name: `${W} drawer front/back`, cutName: 'Drawer box front / back', x0: bx0 + Tb, x1: bx1 - Tb, y0: by1 - Tb, y1: by1, z0: bz0, z1: bz0 + bh, cut: { L: bw - 2 * Tb, W: bh, T: Tb }, sec: i, drawer: id, where: W });
+          put({ kind: 'dbox', name: `${W} drawer front/back`, cutName: 'Drawer box front / back', x0: bx0 + Tb, x1: bx1 - Tb, y0: by0, y1: by0 + Tb, z0: bz0, z1: bz0 + bh, cut: { L: bw - 2 * Tb, W: bh, T: Tb }, sec: i, drawer: id, where: W });
+          put({ kind: 'dbox', name: `${W} drawer bottom`, cutName: 'Drawer bottom', x0: bx0 + Tb, x1: bx1 - Tb, y0: by0 + Tb, y1: by1 - Tb, z0: bz0, z1: bz0 + P.Tdbb, cut: { L: bw - 2 * Tb, W: P.runnerLen - 2 * Tb, T: P.Tdbb }, sec: i, drawer: id, where: W });
+          drawerCount++;
+          fz += fh + g;
+        }
+        zi.bw = cw - 2 * P.runnerSide;
+      } else if (zn.type === 'hang') {
+        const drop = zn.drop === null ? P.railDrop : zn.drop, rz = z1 - drop, yc = (yIn + yc1) / 2;
+        zi.railZ = rz; zi.drop = drop; zi.below = rz - z0;
+        computed[`sections.${i}.zones.${k}.drop`] = drop;
+        put({ kind: 'rail', name: `${W} hanging rail`, x0: cx0 + 1, x1: cx1 - 1, y0: yc - 7.5, y1: yc + 7.5, z0: rz - 15, z1: rz + 15, sec: i, hw: true, len: cw - 2 });
+        railTotal += cw - 2;
+      } else if (zn.type === 'shelves') {
+        const nn = zn.n, gap = (h - nn * T) / (nn + 1);
+        zi.shelves = []; zi.gap = gap;
+        for (let q = 0; q < nn; q++) {
+          const sz = z0 + gap * (q + 1) + T * q;
+          zi.shelves.push(sz);
+          put({ kind: 'adj', name: `${W} adjustable shelf`, cutName: 'Adjustable shelf', x0: cx0 + P.adjGap, x1: cx1 - P.adjGap, y0: yIn, y1: yc1 - P.adjSet, z0: sz, z1: sz + T, cut: { L: cw - 2 * P.adjGap, W: dIn - P.adjSet, T }, sec: i, where: W });
+          adjCount++;
+        }
+      }
+      info.zones.push(zi);
+      z = z1;
+      if (k < m - 1) {
+        put({ kind: 'shelf', name: `${W} fixed shelf`, cutName: 'Fixed shelf', x0: cx0, x1: cx1, y0: yIn, y1: yc1, z0: z, z1: z + T, cut: { L: cw, W: dIn, T }, sec: i, where: W });
+        info.zones[info.zones.length - 1].shelfAbove = z;
+        z += T;
+      }
+    });
+    secs.push(info);
+  });
+  // plan chain like the company's drawing: end panel, to the next rib's centre, centre to centre, ... end panel
+  const bnd = [xL, xL + tw[0]];
+  for (let j = 1; j < n; j++) bnd.push(px[j] + tw[j] / 2);
+  bnd.push(px[n], px[n] + tw[n]);
+  secs.forEach((s, i) => { s.pitch = bnd[i + 2] - bnd[i + 1]; });
+
+  // front: sliding doors and fascia
+  const F = P.front, front = { doors: [], fascia: null };
+  const fasciaH = F.fascia ? F.fasciaH : 0, doorH = P.H - fasciaH;
+  // the rail runs centred in the cavity; the doors are equal, closed they cover it with `overlap` where tracks meet.
+  // Odd doors (1, 3) run on the back track, even ones on the front track, both inside the front zone.
+  const railL = Math.min(P.W, F.rail === null ? P.W : F.rail), rx0 = (P.W - railL) / 2;
+  // track 1 is the outer (room side) one: by default the oak doors, with the mirrors behind them. Closed, doors on
+  // different tracks overlap; neighbours on the same track butt.
+  const tracks = Array.from({ length: F.n }, (_, d) => F.outer === 'alternate' ? d % 2 : (F.finishes[d] === F.outer ? 1 : 0));
+  const nOv = tracks.slice(1).filter((t, d) => t !== tracks[d]).length;
+  const dw = (railL + nOv * F.overlap) / F.n;
+  front.rail = { x0: rx0, x1: rx0 + railL, L: railL, dw, n: F.n };
+  if (F.n > 0) {
+    let x0 = rx0;
+    for (let d = 0; d < F.n; d++) {
+      if (d) x0 += dw - (tracks[d] !== tracks[d - 1] ? F.overlap : 0);
+      const back = tracks[d] === 0, yc = back ? D - F.zone + F.zone * 0.3 : D - F.zone * 0.3;
+      const o = put({ kind: 'sdoor', name: `Sliding door ${d + 1}`, x0, x1: x0 + dw, y0: yc - F.doorT / 2, y1: yc + F.doorT / 2, z0: 0, z1: doorH, finish: F.finishes[d], hw: true, front: true, door: d, track: tracks[d] });
+      front.doors.push(o);
+    }
+    front.closed = front.doors.map(o => o.x0);
+  }
+  if (F.fascia && fasciaH > 0) front.fascia = put({ kind: 'fascia', name: 'Fascia', x0: 0, x1: P.W, y0: D - 18, y1: D, z0: doorH, z1: P.H, hw: true, front: true });
+
+  const model = { P, D, yc0, yc1, yIn, xL, xR, px, tw, bnd, obsFit, balance, partitions, widths, tops, ribs, secs, parts, computed, leftover, autoW, autos, front, doorH,
+    counts: { drawers: drawerCount, rail: railTotal, adj: adjCount, bySize } };
+  // obstruction
+  if (P.box.show) {
+    const g = obsGeom(P);
+    model.obs = g;
+    model.obsRes = obsClearances(model);
+  }
+  model.checks = checks(model);
+  return model;
+}
+
+function obsClearances(M) {
+  const g = M.obs, B = M.P.box, box = { x0: g.x0, x1: g.x1, y0: g.y0, y1: g.y1, z0: g.z0, z1: g.z1 }, out = [];
+  for (const p of M.parts) {
+    if (p.front) continue;
+    const dBox = aabbDist(box, p);
+    let dDoor = Infinity;
+    if (Math.min(p.x1, g.x1) - Math.max(p.x0, g.x0) > 0) dDoor = polyDist(g.env, rectYZ(p));
+    else {
+      // beside the door's x span: the door's clearance there is the box's clearance in x
+      const gx = Math.max(p.x0 - g.x1, g.x0 - p.x1), yz = polyDist(g.env, rectYZ(p));
+      dDoor = yz <= 0 ? gx : Math.hypot(gx, yz);
+    }
+    const d = Math.min(dBox, dDoor);
+    out.push({ p, dBox, dDoor, d, level: d < 0 ? 'bad' : d < B.minClear ? 'warn' : 'ok' });
+  }
+  out.sort((a, b) => a.d - b.d);
+  // the cavity: walls and ceiling
+  const walls = { left: g.x0, right: M.P.W - g.x1, ceiling: M.P.H - g.z1, front: (M.P.wallDepth + M.P.extraDepth) - g.envReach };
+  return { list: out, walls };
+}
+
+function checks(M) {
+  const { P, secs, ribs } = M, out = [], T = P.T;
+  const w = (level, title, text) => out.push({ level, title, text });
+  const f = (v) => { const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+  if (M.balance && !M.balance.ok) w('warn', 'Balancing section can\'t centre the middle', 'Changing its width doesn\'t move the middle (it is the middle section, or autos on both sides cancel it out). Set it to fixed or auto.');
+  for (const f0 of M.obsFit) if (!f0.ok) w('warn', `S${f0.k + 1} can't fit to the ${P.box.label.toLowerCase()}`, `It is set to end just past it, but ${f0.why}; it is sharing the space as auto instead.`);
+  M.widths.forEach((v, i) => { if (v < 100 && !(M.autos && M.P.sections[i].wMode === 'auto')) w('bad', `S${i + 1} too narrow`, `${f(v)} mm clear.`); });
+  if (secs.length % 2) { // how far the middle section sits off the cavity's centre line
+    const mid = secs[(secs.length - 1) / 2], off = (mid.cx0 + mid.cx1) / 2 - P.W / 2;
+    if (Math.abs(off) > 0.25) w('info', `S${mid.i + 1} is ${f(Math.abs(off))} mm ${off > 0 ? 'right' : 'left'} of the cavity's centre`, `Left of it ${f(mid.cx0)} mm, right of it ${f(P.W - mid.cx1)} mm: the partitions on the two sides don't add up to the same board${M.obsFit.some(q => q.ok) ? `, and the ${P.box.label.toLowerCase()} sets a section's width` : ''}.`);
+  }
+  if (M.autos && M.autoW < 100) w('bad', 'Auto section too narrow', `The section${M.autos > 1 ? 's' : ''} set to auto width get ${f(M.autoW)} mm. Make the other sections narrower.`);
+  if (!M.autos && Math.abs(M.leftover) > 0.05) w('bad', M.leftover > 0 ? 'Sections leave a gap' : 'Sections are too wide', `The sections and partitions ${M.leftover > 0 ? 'fall' : 'run'} ${f(Math.abs(M.leftover))} mm ${M.leftover > 0 ? 'short of' : 'past'} the carcass width of ${f(M.xR - M.xL)}. Clear one section's width to make it auto.`);
+  const D = P.wallDepth + P.extraDepth;
+  if (P.front.doors && P.front.n > 0 && M.yc1 > D - P.front.zone + 0.01) w('bad', 'Carcass runs into the door tracks', `Carcass front at ${f(M.yc1)} from the back wall; the sliding doors start at ${f(D - P.front.zone)}.`);
+  else if (P.front.doors && M.counts.drawers && M.yc1 + P.handleProud > D - P.front.zone - 5) w('warn', 'Handles close to the sliding doors', `Drawer handles stand ${P.handleProud} proud, to ${f(M.yc1 + P.handleProud)}; the doors start at ${f(D - P.front.zone)}.`);
+  if (M.yc1 > D) w('bad', 'Carcass deeper than the cavity', `${f(M.yc1)} against ${f(D)}.`);
+  secs.forEach(s => {
+    const S = `S${s.i + 1}`;
+    if (s.top > P.H) w('bad', `${S} top above the ceiling`, `${f(s.top)} against a ${f(P.H)} ceiling.`);
+    const over = s.fillH !== null ? s.fillH : s.spare;
+    if (over < 0) w('bad', `${S} contents don't fit`, `Its zones need ${f(-over)} mm more than the ${f(s.zi1 - s.zi0)} inside. Take a drawer out, lower a zone or raise the top.`);
+    else if (s.fillH !== null && s.fillH < 60) w('warn', `${S} fill zone is tiny`, `The zone left to fill gets ${f(s.fillH)} mm.`);
+    else if (s.fillH === null && s.spare > 1) w('info', `${S} has ${f(s.spare)} mm spare above its drawers`, 'Every zone is a drawer stack sized by its drawers. Add a zone above them to use the space.');
+    if (s.cw > 900) w('warn', `${S} shelves may sag`, `${f(s.cw)} wide in ${T} mm board. Over about 900 they bow under books; keep it narrower or use ${T + 9} mm.`);
+    s.zones.forEach(z => {
+      if (z.type === 'drawers') {
+        if (z.fronts.some(q => q.h < 90)) w('warn', `${S} drawer fronts are shallow`, `Fronts of ${z.fronts.map(q => f(q.h)).join(', ')}: under about 90 the runners and handles don't fit.`);
+        if (Math.abs(z.mismatch) > 0.5) w('warn', `${S} drawer heights don't fill the zone`, `The listed fronts leave ${f(z.mismatch)} mm ${z.mismatch > 0 ? 'spare' : 'over'} in the ${f(z.h)} zone.`);
+        if (z.bw < 150) w('bad', `${S} drawer boxes too narrow`, `Box width ${f(z.bw)}.`);
+        if (z.fronts.some(q => q.box > q.h + 0.01)) w('bad', `${S} drawer box taller than its front`, 'Give that drawer size a taller front.');
+      }
+      if (z.type === 'hang') {
+        if (z.below < 800) w('warn', `${S} short hanging`, `${f(z.below)} below the rail. Shirts want about 1000, coats and dresses 1400 to 1600.`);
+        if (z.drop < 45) w('warn', `${S} rail close to the shelf`, `${f(z.drop)} from the shelf above to the rail centre leaves no room for hanger hooks; 45 or more.`);
+      }
+      if (z.type === 'shelves' && z.n && z.gap < 80) w('warn', `${S} shelves crowded`, `${z.n} shelves leave spaces of ${f(z.gap)}.`);
+    });
+    if (M.P.runnerLen + M.P.Tdf + M.P.frontSet > M.yc1 - M.yIn + 0.01 && s.zones.some(z => z.type === 'drawers')) w('bad', `${S} runners too long`, `${M.P.runnerLen} runners and a ${M.P.Tdf} front need ${M.P.runnerLen + M.P.Tdf + M.P.frontSet}; the carcass is ${f(M.yc1 - M.yIn)} deep inside.`);
+  });
+  ribs.forEach(r => {
+    if (r.h > P.H + 0.01) w('bad', `${r.name} above the ceiling`, `${f(r.h)} against ${f(P.H)}.`);
+    if (r.custom !== null && r.custom < r.hmax - 0.01) w('bad', `${r.name} shorter than the top beside it`, `${f(r.custom)} against a top at ${f(r.hmax)}. Clear it for auto, or raise it.`);
+    if (r.custom !== null && r.custom > r.hmax + 0.01) w('info', `${r.name} runs up to ${f(r.custom)}`, `It stands ${f(r.custom - r.hmax)} above the highest top beside it, and splits the top there.`);
+  });
+  if (M.obs) {
+    const R = M.obsRes, B = P.box, bad = R.list.filter(r => r.level === 'bad'), warn = R.list.filter(r => r.level === 'warn');
+    for (const r of bad) w('bad', `${B.label} hits: ${r.p.name}`, r.dBox < 0 ? `They overlap by ${f(-r.dBox)} mm.` : `Its door, swinging down to ${B.maxAngle} deg, passes ${f(-r.dDoor)} mm into it.`);
+    for (const r of warn) w('warn', `Tight beside the ${B.label.toLowerCase()}: ${r.p.name}`, `${f(r.d)} mm clear (${r.dDoor < r.dBox ? 'to the door as it swings' : 'to it'}); you asked for ${B.minClear}.`);
+    if (R.walls.left < 0 || R.walls.ceiling < 0) w('bad', `${B.label} outside the cavity`, 'Check its position.');
+    if (!bad.length && !warn.length) { const r = R.list[0]; w('ok', `${B.label} clear`, `Nearest part: ${r.p.name}, ${f(r.d)} mm ${r.dDoor < r.dBox ? 'from the door as it swings' : 'from it'}.`); }
+  }
+  const order = { bad: 0, warn: 1, ok: 2, info: 3 };
+  out.sort((a, b) => order[a.level] - order[b.level]);
+  return out;
+}
+
+/* ------------------------------------------------------------------ cut list, hardware, nesting */
+function cutList(M) {
+  const rows = new Map();
+  for (const p of M.parts) {
+    if (!p.cut) continue;
+    const L = Math.round(p.cut.L * 10) / 10, Wd = Math.round(p.cut.W * 10) / 10;
+    const key = [p.cutName, p.cut.T, L, Wd].join('|');
+    if (!rows.has(key)) rows.set(key, { name: p.cutName, T: p.cut.T, L, W: Wd, qty: 0, where: [] });
+    const r = rows.get(key); r.qty++; if (p.where && !r.where.includes(p.where)) r.where.push(p.where);
+  }
+  const order = ['End panel', 'Partition', 'Top', 'Base', 'Fixed shelf', 'Adjustable shelf', 'Kicker', 'Back panel', 'Drawer front', 'Drawer side', 'Drawer box front / back', 'Drawer bottom'];
+  const list = [...rows.values()].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name) || b.L - a.L);
+  list.forEach((r, i) => { r.mark = String(i + 1); });
+  return list;
+}
+function hardware(M) {
+  const P = M.P, out = [], rails = new Map();
+  for (const p of M.parts) if (p.kind === 'rail') { const L = Math.round(p.len); rails.set(L, (rails.get(L) || 0) + 1); }
+  if (M.counts.drawers) {
+    for (const [k, q] of [...M.counts.bySize.entries()].sort((a, b) => Number(b[0].split('|')[1]) - Number(a[0].split('|')[1]))) {
+      const [nm, box] = k.split('|');
+      out.push([`Drawer ${box} x ${P.runnerLen}, soft close`, `${q}`, nm ? `${nm} size (the quote: Nover Krome)` : 'fronts sharing a zone: check the nearest stock box height']);
+    }
+    out.push(['Handles, Momo Dallas 160 matt black', `${M.counts.drawers}`, 'one per drawer front']);
+  }
+  for (const [L, q] of [...rails.entries()].sort((a, b) => b[0] - a[0])) out.push(['Hanging rail, matt black', `${q}`, `${L} long, with 2 end brackets each`]);
+  if (M.counts.adj) out.push(['Shelf pins', `${M.counts.adj * 4}`, `4 per adjustable shelf (${M.counts.adj} shelves)`]);
+  if (P.front.doors && P.front.n) out.push(['Sliding doors (by the supplier)', `${P.front.n}`, `${Math.round((P.W + (P.front.n - 1) * P.front.overlap) / P.front.n)} x ${Math.round(M.doorH)}: ${P.front.finishes.join(', ')}`]);
+  if (P.front.fascia) out.push(['Fascia (by the supplier)', '1', `${P.W} x ${P.front.fasciaH}, Boston oak`]);
+  return out;
+}
+function packBest(list, stock, kerf, trim) {
+  const sorts = [(a, b) => b.L * b.W - a.L * a.W, (a, b) => Math.max(b.L, b.W) - Math.max(a.L, a.W) || b.L * b.W - a.L * a.W, (a, b) => b.L - a.L || b.W - a.W, (a, b) => b.W - a.W || b.L - a.L];
+  let best = null;
+  for (const so of sorts) for (const fit of ['baf', 'bssf', 'blsf']) for (const split of ['sas', 'las', 'minas', 'maxas']) {
+    const r = packGuillotine(list.slice().sort(so), stock, kerf, trim, fit, split);
+    const score = [r.unplaced.length, r.bins.length, r.lastFill];
+    if (!best || score[0] < best.score[0] || (score[0] === best.score[0] && (score[1] < best.score[1] || (score[1] === best.score[1] && score[2] < best.score[2])))) best = Object.assign(r, { score });
+  }
+  return best;
+}
+function packGuillotine(list, stock, kerf, trim, fit, split) {
+  const bins = [], unplaced = [], remaining = stock.slice();
+  for (const p of list) {
+    let bestS = null;
+    const tryBin = (bi) => {
+      bins[bi].free.forEach((fr, fi) => {
+        for (const [w, h, rot] of [[p.L, p.W, false], [p.W, p.L, true]]) {
+          const W = w + kerf, H = h + kerf;
+          if (W <= fr.w + 1e-6 && H <= fr.h + 1e-6) {
+            const dw = fr.w - W, dh = fr.h - H;
+            const sc = fit === 'baf' ? fr.w * fr.h - W * H : fit === 'bssf' ? Math.min(dw, dh) : Math.max(dw, dh);
+            if (!bestS || sc < bestS.sc) bestS = { sc, bi, fi, w, h, W, H, rot };
+          }
+        }
+      });
+    };
+    for (let bi = 0; bi < bins.length; bi++) tryBin(bi);
+    if (!bestS) {
+      const fits = (st) => { const UL = st.L - 2 * trim, UW = st.W - 2 * trim; return (p.L <= UL && p.W <= UW) || (p.W <= UL && p.L <= UW); };
+      const j = remaining.findIndex(fits);
+      if (j >= 0) {
+        const st = remaining.splice(j, 1)[0];
+        bins.push({ L: st.L, W: st.W, free: [{ x: 0, y: 0, w: st.L - 2 * trim + kerf, h: st.W - 2 * trim + kerf }], items: [] });
+        tryBin(bins.length - 1);
+      }
+    }
+    if (!bestS) { unplaced.push(p); continue; }
+    const b = bins[bestS.bi], fr = b.free[bestS.fi];
+    b.items.push({ mark: p.mark, name: p.name, x: fr.x + trim, y: fr.y + trim, w: bestS.w, h: bestS.h, L: p.L, W: p.W });
+    b.free.splice(bestS.fi, 1);
+    const dw = fr.w - bestS.W, dh = fr.h - bestS.H;
+    let horiz;
+    if (split === 'sas') horiz = dw <= dh; else if (split === 'las') horiz = dw > dh;
+    else if (split === 'minas') horiz = bestS.W * dh <= dw * bestS.H; else horiz = bestS.W * dh > dw * bestS.H;
+    const A = horiz ? { x: fr.x + bestS.W, y: fr.y, w: dw, h: bestS.H } : { x: fr.x + bestS.W, y: fr.y, w: dw, h: fr.h };
+    const Bf = horiz ? { x: fr.x, y: fr.y + bestS.H, w: fr.w, h: dh } : { x: fr.x, y: fr.y + bestS.H, w: bestS.W, h: dh };
+    for (const r of [A, Bf]) if (r.w > kerf + 1 && r.h > kerf + 1) b.free.push(r);
+  }
+  const used = bins.filter(b => b.items.length), last = used[used.length - 1];
+  return { bins: used, unplaced, lastFill: last ? last.items.reduce((a, it) => a + it.w * it.h, 0) / (last.L * last.W) : 0 };
+}
+function nest(M, cut) {
+  const S = M.P.sheet, byT = new Map();
+  for (const r of cut) for (let i = 0; i < r.qty; i++) { if (!byT.has(r.T)) byT.set(r.T, []); byT.get(r.T).push({ mark: r.mark, name: r.name, L: r.L, W: r.W }); }
+  const out = [];
+  for (const [T, list] of [...byT.entries()].sort((a, b) => b[0] - a[0])) {
+    const stock = Array.from({ length: 80 }, () => ({ L: S.L, W: S.W }));
+    const r = packBest(list, stock, S.kerf, S.trim);
+    const area = list.reduce((a, p) => a + p.L * p.W, 0);
+    out.push({ T, bins: r.bins, unplaced: r.unplaced, area, use: r.bins.length ? area / (r.bins.length * S.L * S.W) : 0 });
+  }
+  return out;
+}
+
+/* Slide door i by `raw` mm. Doors on the same track butt against each other: a door pushing n doors moves at 1/n of
+   the hand, the whole train stops at the rail ends. Returns a new array of left edges. */
+function slideDoors(pos, tracks, dw, x0, x1, i, raw) {
+  pos = pos.slice();
+  const dir = Math.sign(raw); let rem = Math.abs(raw);
+  const same = pos.map((_, k) => k).filter(k => tracks[k] === tracks[i]);
+  for (let guard = 0; guard < 12 && rem > 1e-6; guard++) {
+    const sorted = same.slice().sort((a, b) => pos[a] - pos[b]);
+    let k = sorted.indexOf(i), n = 1, gap, wall;
+    if (dir > 0) {
+      while (k + 1 < sorted.length && pos[sorted[k + 1]] - (pos[sorted[k]] + dw) < 0.5) { k++; n++; }
+      gap = k + 1 < sorted.length ? pos[sorted[k + 1]] - (pos[sorted[k]] + dw) : Infinity;
+      wall = x1 - (pos[sorted[k]] + dw);
+    } else {
+      while (k - 1 >= 0 && pos[sorted[k]] - (pos[sorted[k - 1]] + dw) < 0.5) { k--; n++; }
+      gap = k - 1 >= 0 ? pos[sorted[k]] - (pos[sorted[k - 1]] + dw) : Infinity;
+      wall = pos[sorted[k]] - x0;
+    }
+    const lo = dir > 0 ? sorted.indexOf(i) : k, hi = dir > 0 ? k : sorted.indexOf(i);
+    const want = rem / n, step = Math.max(0, Math.min(want, gap, wall));
+    for (let q = lo; q <= hi; q++) pos[sorted[q]] += dir * step;
+    rem -= step * n;
+    if (wall <= step + 1e-9 && wall <= gap) break;
+    if (step <= 1e-9 && gap > 1e-9) break;
+  }
+  return pos;
+}
+
+const api = { slideDoors, MINE, REV01, PRESETS, normalize, layout, cutList, hardware, nest, obsGeom, clone };
+if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.RobeCore = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<script>
+/* 3D viewer (three.js r128). Model (x, y, z) maps to three (x - W/2, z, y): x right, y up, z toward the room. */
+(function (root) {
+'use strict';
+const THREE = root.THREE;
+if (!THREE) return;
+const srgb = (hex) => { const c = new THREE.Color(hex); c.convertSRGBToLinear(); return c; };
+const MAT = {
+  board: { color: 0xeeece6, rough: 0.85 }, front: { color: 0xfbfaf7, rough: 0.7 }, kick: { color: 0xd9d6cf, rough: 0.85 },
+  dbox: { color: 0xdedad2, rough: 0.85 }, black: { color: 0x1c1d1f, rough: 0.45, metal: 0.4 }, steel: { color: 0x4c5359, rough: 0.5, metal: 0.4 },
+  steel2: { color: 0x626a72, rough: 0.45, metal: 0.4 }, oak: { color: 0x8b6a47, rough: 0.75 }, oakT: { color: 0x8b6a47, rough: 0.75, opacity: 0.55 },
+  mirror: { color: 0xcdd8de, rough: 0.08, metal: 0.35, opacity: 0.9 }, alu: { color: 0x17181a, rough: 0.4, metal: 0.5 }, env: { color: 0xd23b2f, rough: 1, opacity: 0.2 }, clash: { color: 0xd9483b, rough: 0.6 }, tight: { color: 0xe39a33, rough: 0.6 },
+};
+const KIND = { panel: 'board', top: 'board', base: 'board', shelf: 'board', adj: 'board', back: 'board', kick: 'kick', front: 'front', dbox: 'dbox', rail: 'black', handle: 'black', fascia: 'oak' };
+
+class Viewer {
+  constructor(el) {
+    this.el = el;
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.setPixelRatio(Math.min(root.devicePixelRatio || 1, 2));
+    el.insertBefore(this.renderer.domElement, el.firstChild);
+    this.scene = new THREE.Scene();
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    const hemi = new THREE.HemisphereLight(0xf6f3ee, 0x46423c, 0.65); this.scene.add(hemi);
+    this.key = new THREE.DirectionalLight(0xffffff, 0.7); this.scene.add(this.key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.22); fill.position.set(2500, 1500, 1800); this.scene.add(fill);
+    this.persp = new THREE.PerspectiveCamera(30, 1, 20, 100000);
+    this.ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 10, 200000);
+    this.cam = this.persp;
+    this.target = new THREE.Vector3(0, 1270, 300);
+    this.sph = { th: -0.5, ph: 1.28, r: 9000 };
+    this.mats = {}; this.edgeMat = new THREE.LineBasicMaterial({ color: 0x2a2826, transparent: true, opacity: 0.45 });
+    this.selMat = new THREE.LineBasicMaterial({ color: 0xa8620a });
+    this.opts = { doors: false, fascia: true, swing: true, openAll: false, angle: 90, sel: -1 };
+    this.drawerT = new Map(); this.drawerC = new Map(); this.obsOpen = 1;
+    this.ray = new THREE.Raycaster();
+    this.renderer.setClearColor(0xe4e2dc, 1);
+    this._controls();
+    if (root.ResizeObserver) new ResizeObserver(() => this.resize()).observe(el);
+    this.resize(); this.dirty = true;
+    const loop = () => {
+      let moving = false;
+      for (const [id, g] of this.drawers || []) {
+        const t = (this.opts.openAll || this.drawerT.get(id)) ? g.userData.dist : 0, c = this.drawerC.get(id) || 0;
+        const nc = Math.abs(t - c) < 0.5 ? t : c + (t - c) * 0.2;
+        if (nc !== c) { this.drawerC.set(id, nc); g.position.z = nc; moving = true; }
+      }
+      if (moving) this.dirty = true;
+      if (this.dirty) { this.render(); this.dirty = false; }
+      root.requestAnimationFrame(loop);
+    };
+    loop();
+  }
+  mat(k) {
+    if (!this.mats[k]) { const s = MAT[k]; this.mats[k] = new THREE.MeshStandardMaterial({ color: srgb(s.color), roughness: s.rough, metalness: s.metal || 0, transparent: s.opacity !== undefined, opacity: s.opacity === undefined ? 1 : s.opacity, depthWrite: s.opacity === undefined, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }); }
+    return this.mats[k];
+  }
+  clear() {
+    this.root.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+    this.root.clear();
+  }
+  setModel(M, keep) {
+    this.clear(); this.M = M;
+    const W = M.P.W, X = (x) => x - W / 2;
+    this.drawers = new Map(); this.recs = []; this.doorGroups = [];
+    this.rail = M.front.rail; this.dtrack = M.front.doors.map(o => o.track);
+    const res = M.obsRes ? new Map(M.obsRes.list.map(r => [r.p.id, r.level])) : new Map();
+    for (const p of M.parts) {
+      let mk = KIND[p.kind];
+      if (p.kind === 'sdoor') { this.buildDoor(p, X); continue; }
+      const lvl = res.get(p.id);
+      if (lvl === 'bad') mk = 'clash'; else if (lvl === 'warn') mk = 'tight';
+      const g = new THREE.BoxGeometry(Math.max(0.5, p.x1 - p.x0), Math.max(0.5, p.z1 - p.z0), Math.max(0.5, p.y1 - p.y0));
+      const mesh = new THREE.Mesh(g, this.mat(mk));
+      mesh.position.set(X((p.x0 + p.x1) / 2), (p.z0 + p.z1) / 2, (p.y0 + p.y1) / 2);
+      const grpObj = new THREE.Group(); grpObj.add(mesh);
+      if (!p.hw && p.kind !== 'sdoor') {
+        const e = new THREE.LineSegments(new THREE.EdgesGeometry(g), p.sec === this.opts.sel ? this.selMat : this.edgeMat);
+        e.position.copy(mesh.position); grpObj.add(e);
+      }
+      mesh.userData.part = p;
+      if (p.drawer) {
+        if (!this.drawers.has(p.drawer)) { const dg = new THREE.Group(); dg.userData.dist = M.P.runnerLen * 0.85; this.root.add(dg); this.drawers.set(p.drawer, dg); }
+        const dg = this.drawers.get(p.drawer); dg.add(grpObj); dg.position.z = this.drawerC.get(p.drawer) || 0;
+      } else this.root.add(grpObj);
+      this.recs.push({ p, obj: grpObj });
+    }
+    // the obstruction, its door on a pivot and the swept envelope
+    this.obs = null;
+    if (M.obs) {
+      const s = M.obs, cx = X((s.x0 + s.x1) / 2), bw = s.x1 - s.x0;
+      const bg = new THREE.BoxGeometry(bw, s.z1 - s.z0, s.y1 - s.y0 - s.p);
+      const box = new THREE.Mesh(bg, this.mat('steel')); box.position.set(cx, (s.z0 + s.z1) / 2, (s.y0 + s.y1 - s.p) / 2); box.userData.obs = true;
+      const be = new THREE.LineSegments(new THREE.EdgesGeometry(bg), this.edgeMat); be.position.copy(box.position);
+      this.root.add(box, be);
+      const pv = new THREE.Group(); pv.position.set(cx, s.piv[1], s.piv[0]);
+      const dg = new THREE.BoxGeometry(bw, s.L, Math.max(1, s.p));
+      const door = new THREE.Mesh(dg, this.mat('steel2')); door.position.set(0, s.L / 2 + s.p / 2, 0); door.userData.obs = true;
+      const de = new THREE.LineSegments(new THREE.EdgesGeometry(dg), this.edgeMat); de.position.copy(door.position);
+      pv.add(door, de); this.root.add(pv);
+      const shape = new THREE.Shape(s.env.map(([y, z]) => new THREE.Vector2(y, z)));
+      const eg = new THREE.ExtrudeGeometry(shape, { depth: bw, bevelEnabled: false });
+      eg.applyMatrix4(new THREE.Matrix4().set(0, 0, 1, X(s.x0), 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1));
+      const env = new THREE.Mesh(eg, this.mat('env'));
+      this.root.add(env);
+      this.obs = { pv, env };
+    }
+    // room: floor and the cavity's outline
+    const P = M.P, D = M.D, L = [];
+    const seg = (a, b) => { L.push(new THREE.Vector3(X(a[0]), a[2], a[1]), new THREE.Vector3(X(b[0]), b[2], b[1])); };
+    seg([0, 0, 0], [P.W, 0, 0]); seg([0, 0, P.H], [P.W, 0, P.H]); seg([0, 0, 0], [0, 0, P.H]); seg([P.W, 0, 0], [P.W, 0, P.H]);
+    seg([0, 0, 0], [0, D, 0]); seg([P.W, 0, 0], [P.W, D, 0]); seg([0, 0, P.H], [0, D, P.H]); seg([P.W, 0, P.H], [P.W, D, P.H]);
+    seg([0, D, 0], [0, D, P.H]); seg([P.W, D, 0], [P.W, D, P.H]); seg([0, D, P.H], [P.W, D, P.H]);
+    seg([0, P.wallDepth, 0], [0, P.wallDepth, P.H]); seg([P.W, P.wallDepth, 0], [P.W, P.wallDepth, P.H]);
+    const room = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(L), new THREE.LineBasicMaterial({ color: 0x8a8378, transparent: true, opacity: 0.7 }));
+    const fl = new THREE.Mesh(new THREE.PlaneGeometry(P.W + 1400, D + 1600), new THREE.MeshStandardMaterial({ color: srgb(0xb9b2a6), roughness: 1, transparent: true, opacity: 0.35, depthWrite: false }));
+    fl.rotation.x = -Math.PI / 2; fl.position.set(0, -0.5, D / 2 + 500);
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(P.W, P.H), new THREE.MeshStandardMaterial({ color: srgb(0xd6d1c7), roughness: 1, transparent: true, opacity: 0.5, depthWrite: false }));
+    wall.position.set(0, P.H / 2, -0.5);
+    room.userData.noFit = fl.userData.noFit = wall.userData.noFit = true;
+    this.root.add(room, fl, wall);
+    this.apply();
+    if (!keep) this.fit();
+    this.dirty = true;
+  }
+  buildDoor(p, X) {
+    const w = p.x1 - p.x0, h = p.z1 - p.z0, t = p.y1 - p.y0, fw = 26, g = new THREE.Group();
+    const add = (sx, sy, sz, mat, x, y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat); m.position.set(x, y, 0); m.userData.door = p.door; g.add(m); };
+    add(w - 2 * fw, h - 2 * fw, Math.max(4, t * 0.35), this.mat(p.finish === 'mirror' ? 'mirror' : 'oak'), 0, 0);
+    const alu = this.mat('alu');
+    add(fw, h, t, alu, -w / 2 + fw / 2, 0); add(fw, h, t, alu, w / 2 - fw / 2, 0);
+    add(w - 2 * fw, fw, t, alu, 0, h / 2 - fw / 2); add(w - 2 * fw, fw * 1.6, t, alu, 0, -h / 2 + fw * 0.8);
+    g.userData.w = w; g.userData.X = X;
+    g.position.set(X(this.doorPos[p.door] + w / 2), (p.z0 + p.z1) / 2, (p.y0 + p.y1) / 2);
+    this.doorGroups[p.door] = g; this.root.add(g); this.recs.push({ p, obj: g });
+  }
+  placeDoors() {
+    for (const g of this.doorGroups) if (g) { const i = g.children[0].userData.door; g.position.x = g.userData.X(this.doorPos[i] + g.userData.w / 2); }
+    this.dirty = true;
+  }
+  set(o) { Object.assign(this.opts, o); this.apply(); }
+  apply() {
+    if (!this.M) return;
+    const o = this.opts;
+    for (const r of this.recs) {
+      if (r.p.kind === 'sdoor') r.obj.visible = !!o.doors;
+      if (r.p.kind === 'fascia') r.obj.visible = !!o.fascia;
+    }
+    if (this.obs) {
+      this.obs.pv.rotation.x = (o.angle * Math.PI / 180);
+      this.obs.env.visible = !!o.swing;
+    }
+    this.dirty = true;
+  }
+  toggleDrawer(id) { this.drawerT.set(id, !this.drawerT.get(id)); this.dirty = true; }
+  bounds() {
+    const b = new THREE.Box3(); this.root.updateMatrixWorld(true);
+    this.root.traverse(o => { if (o.isMesh && !o.userData.noFit && o.visible) b.expandByObject(o); });
+    return b;
+  }
+  fit() {
+    const b = this.bounds(); if (b.isEmpty()) return;
+    const c = b.getCenter(new THREE.Vector3()), size = b.getSize(new THREE.Vector3());
+    this.target.copy(c);
+    const fov = THREE.MathUtils.degToRad(this.persp.fov), asp = this.aspect || 1.5;
+    const rad = Math.max(size.y / 2 / Math.tan(fov / 2), size.x / 2 / Math.tan(fov / 2) / asp);
+    this.sph.r = Math.min(60000, rad * 1.25 + size.z);
+    this.orthoH = Math.max(size.y / 2, size.x / 2 / asp, (this.sph.ph < 0.3 ? size.z / 2 : 0)) * 1.18;
+    this.orthoR = this.sph.r;
+    this.dirty = true;
+  }
+  view(name) {
+    const v = { iso: [-0.5, 1.28], front: [0, Math.PI / 2 - 0.001], side: [-Math.PI / 2, Math.PI / 2 - 0.001], top: [0, 0.001] }[name] || [-0.5, 1.28];
+    this.sph.th = v[0]; this.sph.ph = v[1];
+    this.cam = name === 'iso' ? this.persp : this.ortho;
+    this.fit();
+    if (name === 'top') { const b = this.bounds(), s = b.getSize(new THREE.Vector3()); this.orthoH = Math.max(s.z / 2, s.x / 2 / (this.aspect || 1)) * 1.2; }
+    if (name === 'side') { const b = this.bounds(), s = b.getSize(new THREE.Vector3()); this.orthoH = Math.max(s.y / 2, s.z / 2 / (this.aspect || 1)) * 1.15; }
+  }
+  resize() {
+    const w = this.el.clientWidth || 300, h = this.el.clientHeight || 300;
+    this.renderer.setSize(w, h, false);
+    this.renderer.domElement.style.width = '100%'; this.renderer.domElement.style.height = '100%';
+    this.persp.aspect = w / h; this.persp.updateProjectionMatrix(); this.aspect = w / h; this.dirty = true;
+  }
+  render() {
+    const s = this.sph, sp = Math.sin(s.ph);
+    const dir = new THREE.Vector3(sp * Math.sin(s.th), Math.cos(s.ph), sp * Math.cos(s.th));
+    if (this.cam === this.ortho) {
+      const hh = (this.orthoH || 1500) * (s.r / (this.orthoR || s.r)), hw = hh * (this.aspect || 1);
+      Object.assign(this.ortho, { left: -hw, right: hw, top: hh, bottom: -hh }); this.ortho.updateProjectionMatrix();
+      this.ortho.position.copy(this.target).addScaledVector(dir, 40000);
+      this.ortho.up.set(0, s.ph < 0.01 ? 0 : 1, s.ph < 0.01 ? -1 : 0);
+    } else { this.persp.position.copy(this.target).addScaledVector(dir, s.r); this.persp.up.set(0, 1, 0); }
+    this.cam.lookAt(this.target);
+    this.key.position.copy(this.cam.position).add(new THREE.Vector3(-1500, 2500, 1200));
+    this.renderer.render(this.scene, this.cam);
+  }
+  pick(cx, cy) {
+    const rc = this.renderer.domElement.getBoundingClientRect();
+    this.ray.setFromCamera(new THREE.Vector2((cx - rc.left) / rc.width * 2 - 1, -(cy - rc.top) / rc.height * 2 + 1), this.cam);
+    const meshes = []; this.root.traverse(o => { if (o.isMesh && o.visible && (o.userData.part || o.userData.obs || o.userData.door !== undefined)) { let v = true, q = o; while (q) { if (!q.visible) v = false; q = q.parent; } if (v) meshes.push(o); } });
+    for (const h of this.ray.intersectObjects(meshes, false)) {
+      const p = h.object.userData.part;
+      if (h.object.userData.obs) return { obs: true };
+      if (h.object.userData.door !== undefined) return { door: h.object.userData.door };
+      if (p && p.drawer) return { drawer: p.drawer };
+      if (p) return { part: p };
+    }
+    return null;
+  }
+  _controls() {
+    const el = this.renderer.domElement, pts = new Map();
+    let last = null, mode = null, pinch = null, down = null;
+    const pan = (dx, dy) => {
+      const k = (this.cam === this.ortho ? (this.orthoH || 1500) * (this.sph.r / (this.orthoR || this.sph.r)) * 2 / (this.el.clientHeight || 400) : this.sph.r * 0.0009);
+      const right = new THREE.Vector3().setFromMatrixColumn(this.cam.matrixWorld, 0), up = new THREE.Vector3().setFromMatrixColumn(this.cam.matrixWorld, 1);
+      this.target.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
+    };
+    el.addEventListener('pointerdown', (e) => {
+      el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+      down = pts.size === 1 && e.button === 0 ? { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId } : null;
+      last = [e.clientX, e.clientY]; mode = (e.button === 2 || e.shiftKey) ? 'pan' : 'rot';
+      this.drag = null;
+      if (pts.size === 1 && e.button === 0 && !e.shiftKey && this.doorGroups && this.doorGroups.length) {
+        const h = this.pick(e.clientX, e.clientY);
+        if (h && h.door !== undefined) {
+          // how far, in screen pixels, 100 mm along the rail moves at the door's height
+          const c = this.doorGroups[h.door].position.clone(), a = c.clone().project(this.cam), b = c.clone().add(new THREE.Vector3(100, 0, 0)).project(this.cam), rc = el.getBoundingClientRect();
+          const sx = (b.x - a.x) * rc.width / 2, sy = -(b.y - a.y) * rc.height / 2;
+          if (Math.hypot(sx, sy) > 1.5) { mode = 'door'; this.drag = { i: h.door, s: [sx, sy] }; el.style.cursor = 'grabbing'; }
+        }
+      }
+      if (pts.size === 2) { const v = [...pts.values()]; pinch = { d: Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]), c: [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2] }; }
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!pts.has(e.pointerId)) return;
+      if (down && down.id === e.pointerId) down.moved = Math.max(down.moved, Math.hypot(e.clientX - down.x, e.clientY - down.y));
+      pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pts.size === 2 && pinch) {
+        const v = [...pts.values()], d = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]), c = [(v[0][0] + v[1][0]) / 2, (v[0][1] + v[1][1]) / 2];
+        this.sph.r = Math.min(60000, Math.max(200, this.sph.r * pinch.d / Math.max(d, 1))); pan(c[0] - pinch.c[0], c[1] - pinch.c[1]); pinch = { d, c }; this.dirty = true; return;
+      }
+      const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY];
+      if (mode === 'door' && this.drag) {
+        const s = this.drag.s, mm = (dx * s[0] + dy * s[1]) / (s[0] * s[0] + s[1] * s[1]) * 100, R0 = this.rail;
+        if (mm) { const np = window.RobeCore.slideDoors(this.doorPos, this.dtrack, R0.dw, R0.x0, R0.x1, this.drag.i, mm); for (let q = 0; q < np.length; q++) this.doorPos[q] = np[q]; this.placeDoors(); this.onDoorsMoved && this.onDoorsMoved(false); }
+        return;
+      }
+      if (mode === 'pan') pan(dx, dy);
+      else { this.sph.th -= dx * 0.0085; this.sph.ph = Math.min(Math.PI - 0.05, Math.max(0.02, this.sph.ph - dy * 0.0085)); if (this.cam === this.ortho) { this.cam = this.persp; this.onViewChange && this.onViewChange('iso'); } }
+      this.dirty = true;
+    });
+    const end = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (pts.size === 1) { last = [...pts.values()][0]; mode = 'rot'; } };
+    el.addEventListener('pointermove', (e) => {
+      if (pts.size || e.pointerType !== 'mouse') return;
+      this._hov = e; if (this._hovRaf) return;
+      this._hovRaf = root.requestAnimationFrame(() => { this._hovRaf = 0; const h = this.pick(this._hov.clientX, this._hov.clientY); el.style.cursor = h && h.door !== undefined ? 'grab' : h && (h.drawer || h.obs) ? 'pointer' : ''; });
+    });
+    el.addEventListener('pointerup', (e) => { if (mode === 'door') { this.drag = null; mode = 'rot'; el.style.cursor = 'grab'; this.onDoorsMoved && this.onDoorsMoved(true); } const click = down && down.id === e.pointerId && down.moved < 5 && pts.size === 1; down = null; end(e); if (click && this.onClick) this.onClick(this.pick(e.clientX, e.clientY)); });
+    el.addEventListener('pointercancel', (e) => { down = null; end(e); });
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+    el.addEventListener('wheel', (e) => { e.preventDefault(); this.sph.r = Math.min(60000, Math.max(200, this.sph.r * Math.exp(e.deltaY * 0.0012))); this.dirty = true; }, { passive: false });
+  }
+  setBackground(hex) { this.renderer.setClearColor(hex, 1); this.dirty = true; }
+}
+root.RobeViewer = Viewer;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<script>
+/* Page: editor, drawings, checks, cut list. */
+(function () {
+'use strict';
+const C = window.RobeCore;
+const LS = 'master-robe-builder.v4', LS_THEME = 'master-robe-builder.theme', LS_TAB = 'master-robe-builder.tab';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const f1 = (v) => { if (v === null || v === undefined || !isFinite(v)) return '-'; const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+const readLS = (k) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage off */ } };
+
+let state = C.normalize(readLS(LS) || C.MINE);
+let model = null, viewer = null, timer = null, sel = 0;
+const openSecs = new Set([0]);
+const view = { doors: false, fascia: true, swing: true, openAll: false, angle: 90 };
+const LS_DOORS = 'master-robe-builder.doors';
+const doorPos = [];
+let doorKey = '';
+// keep the dragged positions while the rail stays the same; anything else closes the doors
+function syncDoors(M) {
+  const R0 = M.front.rail, key = [R0.x0, R0.x1, R0.dw, R0.n].map(v => Math.round(v * 10)).join('|') + '|' + M.front.doors.map(o => o.track).join('');
+  if (!doorKey) { const sv = readLS(LS_DOORS); if (sv && sv.key === key && Array.isArray(sv.pos)) { doorPos.splice(0, doorPos.length, ...sv.pos); doorKey = key; } }
+  const bad = doorPos.length !== R0.n || doorPos.some(x => !isFinite(x) || x < R0.x0 - 0.5 || x + R0.dw > R0.x1 + 0.5);
+  if (key !== doorKey || bad) { doorPos.splice(0, doorPos.length, ...(M.front.closed || [])); doorKey = key; }
+}
+function saveDoors() { writeLS(LS_DOORS, { key: doorKey, pos: doorPos }); }
+
+/* ---------------------------------------------------------------- state paths */
+function getPath(o, path) { return path.split('.').reduce((a, k) => a == null ? a : a[k], o); }
+function setPath(o, path, v) { const ks = path.split('.'); let a = o; for (let i = 0; i < ks.length - 1; i++) a = a[ks[i]]; a[ks[ks.length - 1]] = v; }
+
+/* ---------------------------------------------------------------- field specs */
+const F = {
+  cavity: [
+    ['h', 'Cavity'],
+    ['W', 'Width, wall to wall', 'num', 'mm', '', 0.5],
+    ['H', 'Height, floor to ceiling', 'num', 'mm', '', 1],
+    ['wallDepth', 'Depth, wall reveal', 'num', 'mm', 'The 510 part.', 1],
+    ['extraDepth', 'Depth added in front', 'num', 'mm', 'The 90 part; total depth is the two added.', 1],
+    ['h', 'Carcass'],
+    ['depth', 'Carcass depth', 'num', 'mm', 'Ribs, tops, bases and shelves. The quote has all internals at 447.', 1],
+    ['mainTop', 'Main top height', 'num', 'mm', 'Top surface for every section left on "main". The quote: 2148.', 1],
+    ['sideGapL', 'Gap to the left wall', 'num', 'mm', 'Scribe room. 1.5 each side gives the quote\'s 3795.', 0.5],
+    ['sideGapR', 'Gap to the right wall', 'num', 'mm', '', 0.5],
+    ['backGap', 'Gap to the back wall', 'num', 'mm', '', 1],
+    ['topMode', 'Tops', 'sel', '', 'Continuous runs one top over level sections and the single partitions between them; a doubled or taller partition, or a step in height, splits it.', [['continuous', 'Continuous over partitions'], ['between', 'Between partitions']]],
+    ['h', 'Kickers'],
+    ['kickH', 'Kicker height', 'num', 'mm', 'Each section chooses whether it gets one.', 1],
+    ['kickSet', 'Kicker set back', 'num', 'mm', 'From the carcass front edge.', 1],
+  ],
+  obs: [
+    ['box.show', 'Something in the cavity to keep clear of', 'bool', '', 'A box, hatch or fitting on the wall; every part is checked against it and its door swing.', null, true],
+    ['box.label', 'Name', 'txt', '', 'What the drawings and checks call it.'],
+    ['h', 'Position'],
+    ['box.xRight', 'Right side from the left wall', 'num', 'mm', '', 1],
+    ['box.z0', 'Bottom above the floor', 'num', 'mm', '', 1],
+    ['box.y0', 'Off the back wall', 'num', 'mm', '0 is mounted on the wall.', 1],
+    ['h', 'Size'],
+    ['box.w', 'Width', 'num', 'mm', '', 1],
+    ['box.h', 'Height', 'num', 'mm', '', 1],
+    ['box.d', 'Depth', 'num', 'mm', 'Including its door.', 1],
+    ['h', 'Door'],
+    ['box.doorT', 'Drops below the box when open', 'num', 'mm', 'Hinged on the bottom, it swings forward and down. At 90 deg it lies flat, sticking out in front, its underside this far below the box\'s bottom.', 0.5],
+    ['box.doorL', 'Door length', 'nnum', 'mm', 'How far it sticks out in front, open. Blank: the box height.', 1],
+    ['box.maxAngle', 'Opens to', 'num', 'deg', '', 1],
+    ['box.minClear', 'Clearance wanted', 'num', 'mm', 'Anything closer than this to the box or its door swing is flagged.', 1],
+    ['box.gapP', 'Partition this far past the box', 'num', 'mm', 'For a section set to fit to it: its right-hand partition starts this far right of it.', 1],
+  ],
+  doors: [
+    ['front.doors', 'Sliding doors in front', 'bool', '', '', null, true],
+    ['front.n', 'Number of doors', 'num', '', '', 1, true],
+    ['front.zone', 'Track zone depth', 'num', 'mm', 'Measured back from the cavity front: the 90 mm added in front. The carcass must stop behind it.', 1],
+    ['front.rail', 'Rail length', 'nnum', 'mm', 'Centred in the cavity; blank runs wall to wall. The doors are sized to cover it and can\'t leave it.', 1],
+    ['front.outer', 'Outer track', 'sel', '', 'The doors on the room side; the rest run on the track behind.', [['oak', 'Boston oak doors'], ['mirror', 'Mirror doors'], ['alternate', 'Alternate doors']]],
+    ['front.overlap', 'Door overlap', 'num', 'mm', 'Where a front door meets a back one.', 1],
+    ['front.doorT', 'Door thickness', 'num', 'mm', '', 1],
+    ['front.fascia', 'Fascia across the top', 'bool'],
+    ['front.fasciaH', 'Fascia height', 'num', 'mm', 'Doors run from the floor to its underside: 2555 - 115 = 2440.', 1],
+  ],
+  build: [
+    ['h', 'Board'],
+    ['T', 'Carcass, shelves, partitions', 'num', 'mm', 'The quote: 16 mm throughout.', 1],
+    ['Tkick', 'Kickers', 'num', 'mm', '', 1],
+    ['backs', 'Back panels in each section', 'bool'],
+    ['Tback', 'Back panels', 'num', 'mm', '', 1],
+    ['h', 'Shelves and rails'],
+    ['adjSet', 'Adjustable shelf set back', 'num', 'mm', '', 1],
+    ['adjGap', 'Adjustable shelf gap each end', 'num', 'mm', '', 0.5],
+    ['railDrop', 'Rail centre below the shelf', 'num', 'mm', 'Default for hanging zones that don\'t set their own.', 1],
+    ['h', 'Drawers'],
+    ['Tdf', 'Drawer fronts', 'num', 'mm', '', 1],
+    ['Tdb', 'Drawer box sides, front, back', 'num', 'mm', 'Metal-sided systems (Nover Krome) replace the sides; check their cutting sizes.', 1],
+    ['Tdbb', 'Drawer bottoms', 'num', 'mm', '', 1],
+    ['dGap', 'Gap round the fronts', 'num', 'mm', '', 0.5],
+    ['runnerLen', 'Runner length', 'num', 'mm', '', 50],
+    ['runnerSide', 'Runner clearance each side', 'num', 'mm', '', 0.5],
+    ['frontExtra', 'Front taller than its box', 'num', 'mm', 'For drawer sizes that leave their front height blank.', 1],
+    ['boxLess', 'Box lower than its front, shared zones', 'num', 'mm', 'Only for drawer stacks set to share a zone equally.', 1],
+    ['frontSet', 'Fronts set back from the carcass edge', 'num', 'mm', '', 1],
+    ['handleProud', 'Handles stand proud', 'num', 'mm', '', 1],
+    ['h', 'Sheets'],
+    ['sheet.L', 'Sheet length', 'num', 'mm', 'Ribs at 2440 need a sheet longer than 2440 plus trim.', 10],
+    ['sheet.W', 'Sheet width', 'num', 'mm', '', 10],
+    ['sheet.kerf', 'Saw kerf', 'num', 'mm', '', 0.5],
+    ['sheet.trim', 'Trim off each edge', 'num', 'mm', '', 1],
+  ],
+};
+function fieldHTML(spec) {
+  const [k, label, t, unit, hint, extra, r] = spec;
+  if (k === 'h') return `<h3>${esc(label)}</h3>`;
+  const id = 'f-' + k.replace(/\./g, '-'), v = getPath(state, k), hn = hint ? `<small>${esc(hint)}</small>` : '';
+  if (t === 'bool') return `<label class="check"><input type="checkbox" id="${id}" data-k="${k}" data-t="bool"${r ? ' data-r' : ''}${v ? ' checked' : ''}> <span>${esc(label)}</span></label>${hint ? `<div class="hint">${esc(hint)}</div>` : ''}`;
+  if (t === 'txt') return `<div class="field"><div><label for="${id}">${esc(label)}</label>${hn}</div><input type="text" id="${id}" data-k="${k}" data-t="str" data-r value="${esc(v || '')}" style="width:180px"></div>`;
+  if (t === 'sel') return `<div class="field"><div><label for="${id}">${esc(label)}</label>${hn}</div><select id="${id}" data-k="${k}" data-t="str">${extra.map(([a, b]) => `<option value="${a}"${a === v ? ' selected' : ''}>${esc(b)}</option>`).join('')}</select></div>`;
+  return `<div class="field"><div><label for="${id}">${esc(label)}</label>${hn}</div><div class="num"><input id="${id}" type="number" step="${extra || 1}" inputmode="decimal" data-k="${k}" data-t="${t}"${r ? ' data-r' : ''} value="${v === null || v === undefined ? '' : v}"><span>${esc(unit || '')}</span></div></div>`;
+}
+
+const ZT = [['drawers', 'Drawers'], ['hang', 'Hanging'], ['shelves', 'Shelves'], ['open', 'Open']];
+function zoneHTML(i, k) {
+  const z = state.sections[i].zones[k], p = `sections.${i}.zones.${k}`, m = state.sections[i].zones.length;
+  let params = '';
+  if (z.type === 'drawers') {
+    const mode = `<label>Fronts <select id="z-${i}-${k}-mode" data-k="${p}.mode" data-t="str" data-r><option value="sized"${z.mode === 'sized' ? ' selected' : ''}>by drawer size</option><option value="equal"${z.mode === 'equal' ? ' selected' : ''}>share the zone</option></select></label>`;
+    if (z.mode === 'sized') {
+      const opts = (cur) => state.drawerSizes.map(d => `<option value="${d.id}"${d.id === cur ? ' selected' : ''}>${esc(d.name)} ${d.box}</option>`).join('');
+      const chips = z.list.map((id, f) => `<span class="dchip"><select id="z-${i}-${k}-l${f}" aria-label="Drawer ${f + 1} size" data-k="${p}.list.${f}" data-t="str" data-r>${opts(id)}</select><button type="button" data-act="ddel" data-s="${i}" data-z="${k}" data-f="${f}" aria-label="Remove drawer ${f + 1}"${z.list.length === 1 ? ' disabled' : ''}>&times;</button></span>`).reverse().join('');
+      params = `${mode}<div class="dstack"><span class="dlab">top</span>${chips}<span class="dlab">bottom</span></div><div class="row-btns">${state.drawerSizes.map(d => `<button type="button" class="btn small" data-act="dadd" data-s="${i}" data-z="${k}" data-id="${d.id}">+ ${esc(d.name)} ${d.box}</button>`).join('')}</div>`;
+    } else params = `${mode}<label>Drawers <span class="num"><input id="z-${i}-${k}-n" type="number" min="1" max="12" step="1" data-k="${p}.n" data-t="num" value="${z.n}"></span></label>
+    <label>Front heights, bottom first <input type="text" id="z-${i}-${k}-hs" data-k="${p}.hs" data-t="str" value="${esc(z.hs)}" placeholder="equal"></label>`;
+  }
+  else if (z.type === 'hang') params = `<label>Rail below the shelf <span class="num"><input id="z-${i}-${k}-drop" type="number" step="1" data-k="${p}.drop" data-t="nnum" value="${z.drop === null ? '' : z.drop}"><span>mm</span></span></label>`;
+  else if (z.type === 'shelves') params = `<label>Adjustable shelves <span class="num"><input id="z-${i}-${k}-n" type="number" min="0" max="12" step="1" data-k="${p}.n" data-t="num" value="${z.n}"></span></label>`;
+  return `<div class="zone t-${z.type}">
+    <div class="zh"><select id="z-${i}-${k}-t" aria-label="Zone type" data-k="${p}.type" data-t="str" data-r>${ZT.map(([a, b]) => `<option value="${a}"${a === z.type ? ' selected' : ''}>${b}</option>`).join('')}</select>
+      <span class="num" title="Clear height of the zone; blank fills what's left"><input id="z-${i}-${k}-h" type="number" step="1" aria-label="Zone clear height" data-k="${p}.h" data-t="nnum"${z.type === 'drawers' && z.mode === 'sized' ? ' disabled data-sized value=""' : ` value="${z.h === null ? '' : z.h}"`}><span>mm</span></span>
+      <span class="zbtns"><button type="button" data-act="zup" data-s="${i}" data-z="${k}" aria-label="Move zone up"${k === m - 1 ? ' disabled' : ''}>&uarr;</button><button type="button" data-act="zdn" data-s="${i}" data-z="${k}" aria-label="Move zone down"${k === 0 ? ' disabled' : ''}>&darr;</button><button type="button" class="del" data-act="zdel" data-s="${i}" data-z="${k}" aria-label="Remove zone"${m === 1 ? ' disabled' : ''}>&times;</button></span></div>
+    <div class="zp">${params}<span class="zr" id="zr-${i}-${k}"></span></div></div>`;
+}
+function secHTML(i) {
+  const s = state.sections[i], n = state.sections.length, zones = s.zones.map((_, k) => zoneHTML(i, k)).reverse().join('');
+  return `<details class="sec${i === sel ? ' sel' : ''}" data-sec="${i}"${openSecs.has(i) ? ' open' : ''}>
+    <summary><b>S${i + 1}</b><span class="meta" id="sm-${i}"></span><i class="chev"></i></summary>
+    <div class="sec-body">
+      <div class="wrow"><label for="s-${i}-wm">Width</label><select id="s-${i}-wm" data-k="sections.${i}.wm" data-t="wmode" data-r>
+          <option value="fixed"${s.wMode === 'fixed' ? ' selected' : ''}>Fixed</option><option value="auto"${s.wMode === 'auto' ? ' selected' : ''}>Auto, share the rest</option>
+          <option value="obs"${s.wMode === 'obs' ? ' selected' : ''}>Fit to the ${esc(state.box.label.toLowerCase())}</option><option value="balance"${s.wMode === 'balance' ? ' selected' : ''}>Balance: keep the middle centred</option>
+          ${state.sections.map((_, q) => q === i ? '' : `<option value="link:${q}"${s.wMode === 'link' && s.link === q ? ' selected' : ''}>Same as S${q + 1}</option>`).join('')}</select>
+        <span class="num"><input id="s-${i}-w" type="number" step="0.5" aria-label="S${i + 1} clear width" data-k="sections.${i}.w" data-t="nnum" value="${s.wMode === 'fixed' && s.w !== null ? s.w : ''}"${s.wMode === 'fixed' ? '' : ' disabled data-wauto'}><span>mm</span></span></div>
+      <div class="mini3">
+        <label>Top surface<span class="num"><input id="s-${i}-top" type="number" step="1" data-k="sections.${i}.top" data-t="nnum" value="${s.top === null ? '' : s.top}"><span>mm</span></span></label>
+        <label class="check"><input type="checkbox" id="s-${i}-kick" data-k="sections.${i}.kick" data-t="bool"${s.kick ? ' checked' : ''}> Kicker</label>
+      </div>
+      <div class="hint">Zones, top first. Heights are clear inside the zone; leave one blank to fill. A fixed shelf goes between zones.</div>
+      <div class="zones">${zones}<div class="zone-floor" id="sf-${i}"></div></div>
+      <div class="row-btns"><span class="hint" style="align-self:center">Add on top:</span>${ZT.map(([a, b]) => `<button type="button" class="btn small" data-act="zadd" data-s="${i}" data-type="${a}">${b}</button>`).join('')}</div>
+      <div class="row-btns"><button type="button" class="btn small" data-act="sleft" data-s="${i}"${i === 0 ? ' disabled' : ''}>&larr; Move</button><button type="button" class="btn small" data-act="sright" data-s="${i}"${i === n - 1 ? ' disabled' : ''}>Move &rarr;</button><button type="button" class="btn small" data-act="sdup" data-s="${i}">Duplicate</button><button type="button" class="btn small danger" data-act="sdel" data-s="${i}"${n === 1 ? ' disabled' : ''}>Delete</button></div>
+    </div></details>`;
+}
+function ribHTML(j) {
+  const n = state.sections.length, q = state.panels[j];
+  const where = j === 0 ? 'left end' : j === n ? 'right end' : `S${j} | S${j + 1}`;
+  const leaf = (key, lab) => `<div class="leaf"><span class="ll">${lab}</span><span class="num"><input id="r-${j}-${key}" type="number" step="1" aria-label="P${j + 1} ${lab} height" data-k="panels.${j}.${key}" data-t="nnum" value="${q[key] === null ? '' : q[key]}"><span>mm</span></span>
+    <span class="row-btns">${[['2440', '2440'], ['ceil', 'Ceiling'], ['', 'Auto']].map(([v, t]) => `<button type="button" class="btn small" data-act="rib" data-j="${j}" data-key="${key}" data-v="${v}">${t}</button>`).join('')}</span></div>`;
+  return `<div class="rib"><div class="rh"><b>P${j + 1}</b><small id="rb-${j}">${where}</small><label class="check"><input type="checkbox" id="r-${j}-dbl" data-k="panels.${j}.double" data-t="bool" data-r${q.double ? ' checked' : ''}> Doubled</label></div>
+    ${q.double ? leaf('h', 'left leaf') + leaf('h2', 'right leaf') : leaf('h', 'height')}</div>`;
+}
+function renderEditor() {
+  const rail = $('rail'), sc = rail.scrollTop;
+  const n = state.sections.length;
+  $('pane-sections').innerHTML = `
+    <div class="field"><div><span class="lbl">Sections</span><small>New ones copy the last section and take an auto width.</small></div>
+      <div class="stepper"><button type="button" data-act="sdec" aria-label="Fewer sections">&minus;</button><output id="sec-n">${n}</output><button type="button" data-act="sinc" aria-label="More sections">+</button></div></div>
+    <div class="row-btns"><button type="button" class="btn small" data-act="equal">All widths auto (equal)</button><button type="button" class="btn small" data-act="mirror">Mirror left half to the right</button><button type="button" class="btn small" data-act="kickall">Kickers on all</button><button type="button" class="btn small" data-act="kicknone">Kickers off all</button></div>
+    <div class="hint" id="width-hint"></div>
+    ${state.sections.map((_, i) => secHTML(i)).join('')}
+    <h3>Partitions <small class="hint" style="text-transform:none;letter-spacing:0">blank height = auto</small></h3>
+    <div class="hint">The vertical panels, left to right: P1 and the last are the end panels (gables). Doubled puts two boards side by side where two carcasses meet; each leaf can have its own height.</div>
+    <div class="ribs">${state.panels.map((_, j) => ribHTML(j)).join('')}</div>`;
+  $('pane-cavity').innerHTML = F.cavity.map(fieldHTML).join('');
+  $('pane-obs').innerHTML = F.obs.map(fieldHTML).join('') + `<div class="hint" id="obs-pos"></div>`;
+  $('pane-doors').innerHTML = F.doors.map(fieldHTML).join('') + (state.front.doors ? `<h3>Finishes</h3><div class="row-btns">${state.front.finishes.map((fn, d) => `<label class="lbl" style="display:flex;gap:6px;align-items:center">Door ${d + 1}<select id="fd-${d}" data-k="front.finishes.${d}" data-t="str"><option value="oak"${fn === 'oak' ? ' selected' : ''}>Boston oak</option><option value="mirror"${fn === 'mirror' ? ' selected' : ''}>Mirror</option></select></label>`).join('')}</div>` : '') + `<div class="row-btns"><button type="button" class="btn small" data-act="doorsclose">Close all doors</button><button type="button" class="btn small" data-act="doorspark">Park them left and right</button></div>
+    <div class="hint">Turn on the Sliding doors chip over the 3D view, then drag a door sideways. A door pushing the next one on its track moves half as fast and takes it along; the rail ends stop them both. With the oak doors outside, the two mirrors run behind them and butt in the middle.</div>`;
+  $('pane-build').innerHTML = F.build.map(fieldHTML).join('') + `<h3>Drawer sizes</h3>
+    <div class="hint">Stock drawers by box height. Drawer stacks set to "by drawer size" are built from these, so the same sizes line up across sections. A blank front is the box plus the allowance above.</div>
+    <div class="dsizes">${state.drawerSizes.map((d, n) => `<div class="dsize">
+      <input type="text" id="ds-${n}-name" aria-label="Size name" data-k="drawerSizes.${n}.name" data-t="str" data-r value="${esc(d.name)}">
+      <label>box <span class="num"><input id="ds-${n}-box" type="number" step="1" data-k="drawerSizes.${n}.box" data-t="num" data-r value="${d.box}"><span>mm</span></span></label>
+      <label>front <span class="num"><input id="ds-${n}-front" type="number" step="1" data-k="drawerSizes.${n}.front" data-t="nnum" value="${d.front === null ? '' : d.front}"><span>mm</span></span></label>
+      <button type="button" class="btn small danger" data-act="sizedel" data-n="${n}"${state.drawerSizes.length === 1 ? ' disabled' : ''} aria-label="Remove this size">&times;</button></div>`).join('')}</div>
+    <div class="row-btns"><button type="button" class="btn small" data-act="sizeadd">Add a drawer size</button></div>`;
+  rail.scrollTop = sc;
+  fillComputed();
+}
+function fillComputed() {
+  if (!model) return;
+  const M = model, cp = M.computed;
+  document.querySelectorAll('input[data-t="nnum"]').forEach(el => {
+    const v = cp[el.dataset.k];
+    if (el.dataset.k.endsWith('.w')) el.placeholder = f1(v);
+    else if (el.dataset.k.endsWith('.top')) el.placeholder = `main ${f1(v)}`;
+    else if (el.dataset.k === 'box.doorL') el.placeholder = f1(M.P.box.h);
+    else if (el.dataset.k === 'front.rail') el.placeholder = f1(M.front.rail.L);
+    else if (el.dataset.sized !== undefined) el.placeholder = f1(v);
+    else if (v !== undefined) el.placeholder = (el.dataset.k.endsWith('.h') ? (el.dataset.k.startsWith('panels') ? '' : 'fill ') : '') + f1(v);
+  });
+  M.secs.forEach(s => {
+    const el = $('sm-' + s.i);
+    if (el) { const sc = M.P.sections[s.i]; el.textContent = `${f1(s.cw)} clear${sc.wMode === 'auto' ? ' (auto)' : sc.wMode === 'obs' ? ` (fits ${M.P.box.label.toLowerCase()})` : sc.wMode === 'balance' ? ' (balances)' : sc.wMode === 'link' ? ` (= S${sc.link + 1})` : ''} · ${f1(s.pitch)} plan · top ${f1(s.top)}${s.kick ? '' : ' · no kick'}`; }
+    const sf = $('sf-' + s.i);
+    if (sf) sf.textContent = `base at ${f1(s.zb0)}${s.kick ? `, on a ${f1(M.P.kickH)} kicker` : ', on the floor'}; ${f1(s.zi1 - s.zi0)} inside`;
+    s.zones.forEach(z => {
+      const zr = $(`zr-${s.i}-${z.k}`); if (!zr) return;
+      let t = `${f1(z.h)} clear, ${f1(z.z0)} to ${f1(z.z1)}`;
+      if (z.type === 'drawers') t += z.sized ? ` · ${[...z.fronts.reduce((m, q) => m.set(q.box, (m.get(q.box) || 0) + 1), new Map())].map(([b, q]) => `${q} x ${f1(b)}`).join(' + ')} boxes, fronts ${z.fronts.map(q => f1(q.h)).join('/')}` : ` · fronts ${z.fronts.map(q => f1(q.h)).join('/')}`;
+      if (z.type === 'hang') t += ` · rail at ${f1(z.railZ)}, ${f1(z.below)} below it`;
+      if (z.type === 'shelves' && z.n) t += ` · spaces ${f1(z.gap)}`;
+      zr.textContent = t;
+    });
+  });
+  M.partitions.forEach(pt => { const el = $('rb-' + pt.j); if (el) el.textContent = `${pt.j === 0 ? 'left end' : pt.j === M.partitions.length - 1 ? 'right end' : `S${pt.j} | S${pt.j + 1}`} · ${pt.double ? `2 x ${M.P.T}` : M.P.T} · ${pt.leaves.map(L => f1(L.h)).join(' / ')} tall · ${f1(pt.x0)} from the left wall`; });
+  const wh = $('width-hint');
+  if (wh) wh.innerHTML = `Carcass <b>${f1(M.xR - M.xL)}</b> wide: ${M.partitions.length} partitions (${M.partitions.filter(q => q.double).length} doubled) taking <b>${f1(M.tw.reduce((a, b) => a + b, 0))}</b>, and sections summing <b>${f1(M.widths.reduce((a, b) => a + b, 0))}</b>${M.autos ? `; auto sections get <b>${f1(M.autoW)}</b>` : ''}${!M.autos && Math.abs(M.leftover) > 0.05 ? `; <b style="color:var(--bad)">${f1(M.leftover)} unaccounted</b>` : ''}. "Plan" is the width as the company dimensions it, to partition centres.${M.balance && M.balance.ok ? ` The balancing section gets <b>${f1(M.widths[M.P.sections.findIndex(q => q.wMode === 'balance')])}</b> to keep the middle centred.` : ''}${M.obsFit.filter(q => q.ok).map(q => ` S${q.k + 1} fits the ${esc(M.P.box.label.toLowerCase())}: <b>${f1(q.w)}</b> clear, its partition ${f1(M.P.box.gapP)} past it.`).join('')}`;
+  const sp = $('obs-pos');
+  if (sp && M.obs) sp.innerHTML = `Left side <b>${f1(M.obs.x0)}</b> from the left wall, top at <b>${f1(M.obs.z1)}</b>. Open, the door reaches <b>${f1(M.obs.envReach)}</b> from the back wall and dips to <b>${f1(M.obs.envLow)}</b> above the floor.`;
+}
+
+/* ---------------------------------------------------------------- rebuild */
+function save() { writeLS(LS, state); }
+function rebuild(keepView) {
+  try { model = C.layout(state); }
+  catch (e) { console.error(e); status('That combination does not lay out: ' + e.message); return; }
+  syncDoors(model);
+  if (viewer) { viewer.doorPos = doorPos; viewer.opts.sel = sel; viewer.setModel(model, keepView); viewer.set(view); }
+  fillComputed(); renderSummary(); renderObs(); renderElev(); renderSide(); renderCut();
+  $('hdr-size').textContent = `${f1(model.P.W)} x ${f1(model.P.H)} x ${f1(model.D)}`;
+  $('hdr-sec').textContent = `${model.secs.length} section${model.secs.length > 1 ? 's' : ''}`;
+  const on = !!model.obs, lab = model.P.box.label;
+  $('tab-obs').textContent = lab; $('obs-title').textContent = lab; $('obs-angle-l').textContent = `${lab} door`; $('leg-obs-t').textContent = `${lab.toLowerCase()} door swing`;
+  for (const id of ['obs-card', 'chip-swing', 'swing-bar', 'leg-obs', 'side-row']) $(id).hidden = !on;
+  document.querySelector('.results').classList.toggle('one', !on);
+  $('obs-angle').max = model.P.box.maxAngle;
+  if (view.angle > model.P.box.maxAngle) { view.angle = model.P.box.maxAngle; $('obs-angle').value = view.angle; $('obs-out').textContent = view.angle + '°'; }
+}
+function schedule() { clearTimeout(timer); timer = setTimeout(() => { state = C.normalize(state); save(); rebuild(true); }, 120); }
+function structural() { state = C.normalize(state); save(); renderEditor(); rebuild(true); }
+
+/* ---------------------------------------------------------------- summary and checks */
+function renderSummary() {
+  const M = model;
+  const cut = C.cutList(M), sheets = C.nest(M, cut);
+  M._cut = cut; M._sheets = sheets;
+  const area = cut.reduce((a, r) => a + r.qty * r.L * r.W, 0) / 1e6;
+  const highs = M.secs.filter(s => Math.abs(s.top - M.P.mainTop) < 0.01).length;
+  const figs = [
+    ['Carcass', `${f1(M.xR - M.xL)} <small>x ${f1(M.P.depth)} deep</small>`],
+    ['Sections', `${M.secs.length} <small>${highs} at ${f1(M.P.mainTop)}</small>`],
+    ['Drawers', `${M.counts.drawers} <small>${[...M.counts.bySize.entries()].map(([k, q]) => `${q} x ${k.split('|')[1]}`).join(', ')}</small>`],
+    ['Hanging rail', `${f1(M.counts.rail / 1000)} m`],
+    ['Adjustable shelves', `${M.counts.adj}`],
+    ['Board', `${area.toFixed(1)} m² <small>${sheets.map(s => `${s.bins.length} x ${s.T}`).join(', ')} sheets</small>`],
+  ];
+  $('figs').innerHTML = figs.map(([k, v]) => `<div class="fig"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  const items = M.checks.slice();
+  for (const s of sheets) if (s.unplaced.length) items.unshift({ level: 'bad', title: `Parts bigger than a ${M.P.sheet.L} x ${M.P.sheet.W} sheet`, text: `${[...new Set(s.unplaced.map(u => u.name))].join(', ')} in ${s.T} mm. Use a longer sheet or split them.` });
+  $('warns').innerHTML = items.map(c => `<div class="warn ${c.level === 'warn' ? '' : c.level}"><span><b>${esc(c.title)}.</b> ${esc(c.text)}</span></div>`).join('');
+  const nb = items.filter(i => i.level === 'bad').length, nw = items.filter(i => i.level === 'warn').length;
+  $('sum-note').textContent = nb ? `${nb} problem${nb > 1 ? 's' : ''} to fix` : nw ? `${nw} to check` : 'no clashes';
+}
+function renderObs() {
+  const M = model, T = $('obs-table');
+  if (!M.obs) { T.innerHTML = ''; $('obs-hint').textContent = 'Turned off on the Obstruction tab.'; $('obs-note').textContent = ''; return; }
+  const B = M.P.box, rows = M.obsRes.list.slice(0, 6);
+  T.innerHTML = '<thead><tr><th>Nearest parts</th><th class="n">To box</th><th class="n">To door swing</th></tr></thead><tbody>' +
+    rows.map(r => `<tr class="${r.level === 'ok' ? '' : r.level}"><td>${esc(r.p.name)}</td><td class="n">${f1(r.dBox)}</td><td class="n">${f1(r.dDoor)}</td></tr>`).join('') + '</tbody>';
+  const worst = M.obsRes.list[0];
+  $('obs-note').textContent = worst ? (worst.d < 0 ? 'clash' : worst.d < B.minClear ? `${f1(worst.d)} mm, tight` : `${f1(worst.d)} mm clear`) : '';
+  $('obs-hint').innerHTML = `${esc(B.label)} <b>${f1(B.w)} x ${f1(B.h)} x ${f1(B.d)}</b> at <b>${f1(M.obs.x0)}</b> to <b>${f1(M.obs.x1)}</b> from the left wall, <b>${f1(M.obs.z0)}</b> to <b>${f1(M.obs.z1)}</b> high. Door swing reaches <b>${f1(M.obs.envReach)}</b> from the back wall, lowest <b>${f1(M.obs.envLow)}</b>. Negative numbers mean the parts overlap.`;
+}
+
+/* ---------------------------------------------------------------- elevation drawing */
+function svgDims() {
+  const S = [];
+  return {
+    S,
+    dimH(H, x1, x2, z, txt, o) {
+      o = o || {}; const y = H - z, fs = o.fs || 52, a = Math.min(x1, x2), b = Math.max(x1, x2);
+      if (o.from !== undefined) for (const x of [a, b]) S.push(`<line class="dim" x1="${x}" x2="${x}" y1="${H - o.from}" y2="${y + (o.from > z ? -12 : 12)}" opacity=".55"/>`);
+      S.push(`<line class="dim" x1="${a - 14}" x2="${b + 14}" y1="${y}" y2="${y}"/>`);
+      for (const x of [a, b]) S.push(`<line class="dim" x1="${x - 12}" x2="${x + 12}" y1="${y + 12}" y2="${y - 12}" stroke-width="3"/>`);
+      const tw = String(txt).length * fs * 0.6;
+      if (b - a > tw + 16) S.push(`<text class="dimt" x="${(a + b) / 2}" y="${y - 12}" text-anchor="middle" font-size="${fs}">${esc(txt)}</text>`);
+      else S.push(`<text class="dimt" x="${(a + b) / 2}" y="${y + (o.alt ? fs + 14 : -12)}" text-anchor="middle" font-size="${fs * 0.8}">${esc(txt)}</text>`);
+    },
+    dimV(H, z1, z2, x, txt, o) {
+      o = o || {}; const a = H - Math.max(z1, z2), b = H - Math.min(z1, z2), fs = o.fs || 52;
+      if (o.from !== undefined) for (const y of [a, b]) S.push(`<line class="dim" x1="${o.from}" x2="${x + (o.from > x ? -12 : 12)}" y1="${y}" y2="${y}" opacity=".55"/>`);
+      S.push(`<line class="dim" x1="${x}" x2="${x}" y1="${a - 14}" y2="${b + 14}"/>`);
+      for (const y of [a, b]) S.push(`<line class="dim" x1="${x - 12}" x2="${x + 12}" y1="${y + 12}" y2="${y - 12}" stroke-width="3"/>`);
+      const side = o.side || -1, tx = x + side * 14;
+      S.push(`<text class="dimt" x="${tx}" y="${(a + b) / 2}" text-anchor="middle" font-size="${fs}" transform="rotate(-90 ${tx} ${(a + b) / 2})" dy="${side < 0 ? 0 : fs * 0.8}">${esc(txt)}</text>`);
+    },
+  };
+}
+const HATCH = `<defs><pattern id="hatch" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="var(--bg)"/><line x1="0" y1="0" x2="0" y2="40" stroke="var(--wall)" stroke-width="5"/></pattern></defs>`;
+function renderElev() {
+  const M = model, P = M.P, H = P.H, Wd = P.W, d = svgDims(), S = d.S, R = (p, cls, extra) => S.push(`<rect class="${cls}" x="${p.x0}" y="${H - p.z1}" width="${Math.max(1, p.x1 - p.x0)}" height="${Math.max(1, p.z1 - p.z0)}"${extra || ''}/>`);
+  S.push(HATCH);
+  // walls, floor, ceiling
+  S.push(`<rect class="wall" x="-80" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="${Wd}" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="0" y="-80" width="${Wd}" height="80"/><rect class="wall" x="-80" y="${H}" width="${Wd + 160}" height="60"/>`);
+  // section hit areas
+  M.secs.forEach(s => S.push(`<rect class="secbg${s.i === sel ? ' sel' : ''}" data-sec="${s.i}" x="${s.cx0}" y="${H - s.top}" width="${s.cw}" height="${s.top}"><title>S${s.i + 1}: click to edit</title></rect>`));
+  const order = ['back', 'kick', 'panel', 'top', 'base', 'shelf', 'adj', 'rail', 'front', 'handle'];
+  const parts = M.parts.filter(p => order.includes(p.kind)).sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
+  for (const p of parts) {
+    if (p.kind === 'adj') S.push(`<line class="p-adj" x1="${p.x0 + 8}" x2="${p.x1 - 8}" y1="${H - (p.z0 + p.z1) / 2}" y2="${H - (p.z0 + p.z1) / 2}"/>`);
+    else if (p.kind === 'rail') {
+      const y = H - (p.z0 + p.z1) / 2, cx = (p.x0 + p.x1) / 2;
+      S.push(`<rect class="p-rail" x="${p.x0}" y="${y - 8}" width="${p.x1 - p.x0}" height="16"/>`);
+      S.push(`<path class="hanger" d="M ${cx} ${y + 8} v 26 l -95 70 h 190 z"/>`);
+    } else if (p.kind === 'handle') S.push(`<rect class="p-handle" x="${p.x0}" y="${H - p.z1}" width="${p.x1 - p.x0}" height="${p.z1 - p.z0}" rx="5"/>`);
+    else if (p.kind !== 'back' || !M.parts.some(q => q.kind === 'shelf')) R(p, 'p-' + p.kind);
+  }
+  // zone labels
+  M.secs.forEach(s => s.zones.forEach(z => {
+    const cx = (s.cx0 + s.cx1) / 2, mid = H - (z.z0 + z.z1) / 2;
+    if (z.type === 'drawers') z.fronts.forEach(q => { if (q.h > 70) S.push(`<text class="lab" x="${s.cx0 + 26}" y="${H - q.z1 + 54}">${q.size ? `${f1(q.box)} box` : f1(q.h)}</text>`); });
+    else if (z.h > 110) {
+      const lab = z.type === 'hang' ? `${f1(z.below)} below rail` : z.type === 'shelves' ? (z.n ? `${z.n} shelves` : 'shelf space') : 'open';
+      const y = z.type === 'hang' ? Math.min(mid + 60, H - z.z0 - 30) : mid;
+      S.push(`<text class="labk" x="${cx}" y="${y}" text-anchor="middle">${f1(z.h)}</text><text class="lab" x="${cx}" y="${y + 52}" text-anchor="middle">${esc(lab)}</text>`);
+    }
+  }));
+  // the obstruction
+  if (M.obs) {
+    const g = M.obs;
+    S.push(`<rect class="p-swing" x="${g.x0}" y="${H - g.z0}" width="${g.x1 - g.x0}" height="${g.z0 - g.envLow}"/>`);
+    S.push(`<rect class="p-obs" x="${g.x0}" y="${H - g.z1}" width="${g.x1 - g.x0}" height="${g.z1 - g.z0}"/>`);
+    S.push(`<text class="labs" x="${(g.x0 + g.x1) / 2}" y="${H - (g.z0 + g.z1) / 2 + 12}" text-anchor="middle">${esc(P.box.label.toUpperCase())}</text>`);
+    d.dimH(H, 0, g.x1, g.z1 + 70, f1(g.x1), {});
+    d.dimH(H, g.x0, g.x1, g.z1 + 150, f1(g.x1 - g.x0), {});
+    d.dimV(H, 0, g.z0, g.x0 - 40, f1(g.z0), { side: -1 });
+  }
+  // front layer
+  if (P.front.fascia && M.front.fascia) R(M.front.fascia, 'p-fascia');
+  if (P.front.doors && view.doors) for (const dr of M.front.doors) { const x = doorPos[dr.door] ?? dr.x0, w = dr.x1 - dr.x0; S.push(`<rect class="p-sdoor" x="${x + 6}" y="${H - dr.z1 + 6}" width="${w - 12}" height="${dr.z1 - dr.z0 - 12}" opacity=".7"/><text class="lab" x="${x + w / 2}" y="${H - dr.z1 + 70}" text-anchor="middle" fill="var(--oak)">${dr.door + 1} ${dr.finish === 'mirror' ? 'mirror' : 'oak'}, ${dr.track ? 'front' : 'back'}</text>`); }
+  // rib heights where they stand above the tops
+  M.ribs.forEach(r => { if (r.custom !== null && r.custom > r.hmax + 0.01) S.push(`<text class="labk" x="${(r.x0 + r.x1) / 2}" y="${H - r.h - 18}" text-anchor="middle" font-size="36">${f1(r.h)}</text>`); });
+  // dimension chains under the floor
+  const yb = -100;
+  M.secs.forEach(s => d.dimH(H, s.cx0, s.cx1, yb, f1(s.cw), {}));
+  const bnd = M.bnd;
+  for (let k = 0; k < bnd.length - 1; k++) d.dimH(H, bnd[k], bnd[k + 1], yb - 110, f1(bnd[k + 1] - bnd[k]), { alt: bnd[k + 1] - bnd[k] < 100 });
+  d.dimH(H, M.xL, M.xR, yb - 260, `${f1(M.xR - M.xL)} carcass`, {});
+  d.dimH(H, 0, Wd, yb - 350, `${f1(Wd)} cavity`, {});
+  S.push(`<text class="lab" x="-70" y="${H - yb + 12}" text-anchor="end">clear</text><text class="lab" x="-70" y="${H - (yb - 110) + 12}" text-anchor="end">plan</text>`);
+  // heights at the sides
+  const levels = [...new Set(M.secs.map(s => s.top))].sort((a, b) => a - b);
+  levels.forEach((z, k) => d.dimV(H, 0, z, Wd + 140 + k * 90, f1(z), { side: 1 }));
+  d.dimV(H, 0, H, Wd + 140 + levels.length * 90, f1(H), { side: 1 });
+  const x0 = -260, x1 = Wd + 250 + levels.length * 90 + 80;
+  $('elev').innerHTML = `<svg viewBox="${x0} -170 ${x1 - x0} ${H + 640}" role="img" aria-label="Front elevation of the wardrobe">${S.join('')}</svg>`;
+}
+function renderSide() {
+  const M = model, P = M.P, H = P.H, D = M.D;
+  if (!M.obs) { $('side').innerHTML = ''; return; }
+  const g = M.obs, cx = (g.x0 + g.x1) / 2, zLo = Math.max(0, Math.min(g.envLow, g.z0) - 520), d = svgDims(), S = d.S, Y = (z) => H - z;
+  S.push(HATCH);
+  S.push(`<rect class="wall" x="-70" y="${Y(H) - 60}" width="70" height="${H - zLo + 60}"/><rect class="wall" x="-70" y="${Y(H) - 60}" width="${D + 140}" height="60"/>`);
+  S.push(`<line class="ceil" x1="${D}" x2="${D}" y1="${Y(H)}" y2="${Y(zLo)}" stroke-dasharray="14 10"/><line class="ceil" x1="${P.wallDepth}" x2="${P.wallDepth}" y1="${Y(H)}" y2="${Y(zLo)}" stroke-dasharray="4 10"/>`);
+  const box = (p, cls) => { const z0 = Math.max(zLo, p.z0); if (p.z1 <= zLo) return; S.push(`<rect class="${cls}" x="${p.y0}" y="${Y(p.z1)}" width="${Math.max(1, p.y1 - p.y0)}" height="${Math.max(1, p.z1 - z0)}"/>`); };
+  // the rib just beyond the cut, as a ghost
+  const beyond = M.ribs.filter(r => r.x0 >= cx).sort((a, b) => a.x0 - b.x0)[0];
+  if (beyond) box({ y0: M.yc0, y1: M.yc1, z0: 0, z1: beyond.h }, 'p-ghost');
+  const cut = M.parts.filter(p => p.x0 <= cx && p.x1 >= cx && !['handle'].includes(p.kind));
+  for (const p of cut) {
+    if (p.kind === 'sdoor') { if (P.front.doors) box(p, 'p-sdoor'); continue; }
+    if (p.kind === 'fascia') { box(p, 'p-fascia'); continue; }
+    if (p.kind === 'rail') { const y = Y((p.z0 + p.z1) / 2); if ((p.z0 + p.z1) / 2 > zLo) S.push(`<ellipse class="p-rail" cx="${(p.y0 + p.y1) / 2}" cy="${y}" rx="9" ry="16"/>`); continue; }
+    box(p, 'p-' + (p.kind === 'adj' ? 'shelf' : p.kind));
+  }
+  // box, door now, swing
+  S.push(`<polygon class="p-swing" points="${g.env.map(q => `${q[0]},${Y(q[1])}`).join(' ')}"/>`);
+  S.push(`<rect class="p-obs" x="${g.y0}" y="${Y(g.z1)}" width="${g.y1 - g.y0 - g.p}" height="${g.z1 - g.z0}"/>`);
+  const dp = g.at(view.angle);
+  S.push(`<polygon class="p-obs" points="${dp.map(q => `${q[0]},${Y(q[1])}`).join(' ')}" style="fill:var(--obs)"/>`);
+  S.push(`<text class="labs" x="${g.y0 + 8}" y="${Y(g.z1) - 16}">${esc(P.box.label.toUpperCase())}</text>`);
+  // clearance down to whatever is below the swing in this cut
+  const under = cut.filter(p => !p.front && p.z1 <= g.envLow + 0.01 && Math.min(p.y1, g.envReach) - Math.max(p.y0, g.y0) > 0).sort((a, b) => b.z1 - a.z1)[0];
+  if (under) d.dimV(H, under.z1, g.envLow, Math.min(g.envReach, under.y1) + 40, f1(g.envLow - under.z1), { side: 1, fs: 36 });
+  d.dimH(H, 0, g.envReach, g.z1 + 70, f1(g.envReach), { fs: 36 });
+  d.dimV(H, zLo, g.z0, -110, '', {});
+  S.push(`<text class="lab" x="${D - 6}" y="${Y(zLo) - 12}" text-anchor="end">room</text>`);
+  d.dimH(H, 0, M.yc1, zLo - 60, f1(M.yc1), { fs: 36 });
+  d.dimH(H, 0, P.wallDepth, zLo - 140, f1(P.wallDepth), { fs: 36 });
+  d.dimH(H, P.wallDepth, D, zLo - 140, f1(D - P.wallDepth), { fs: 36, alt: true });
+  const vb = [-160, Y(H) - 140, D + 300, H - zLo + 140 + 260];
+  $('side').innerHTML = `<svg viewBox="${vb.join(' ')}" role="img" aria-label="Side section through ${esc(P.box.label.toLowerCase())}">${S.join('')}</svg>`;
+  $('side-cap').textContent = `Cut at ${f1(cx)} from the left wall, through the ${P.box.label.toLowerCase()}, seen from the left. Back wall on the left, room on the right. Red: the ${P.box.label.toLowerCase()}, its door at ${view.angle}°, and the space it sweeps.`;
+}
+
+/* ---------------------------------------------------------------- cut list */
+function renderCut() {
+  const M = model, cut = M._cut, sheets = M._sheets;
+  $('cut-table').innerHTML = '<thead><tr><th>#</th><th>Part</th><th class="n">Qty</th><th class="n">Length</th><th class="n">Width</th><th class="n">T</th><th>Where</th></tr></thead><tbody>' +
+    cut.map(r => `<tr><td class="m">${r.mark}</td><td>${esc(r.name)}</td><td class="n">${r.qty}</td><td class="n">${f1(r.L)}</td><td class="n">${f1(r.W)}</td><td class="n">${r.T}</td><td class="m">${esc(r.where.join(' '))}</td></tr>`).join('') + '</tbody>';
+  const hw = C.hardware(M);
+  $('hw-table').innerHTML = '<thead><tr><th>Item</th><th class="n">Qty</th><th>Note</th></tr></thead><tbody>' + hw.map(r => `<tr><td>${esc(r[0])}</td><td class="n">${esc(r[1])}</td><td class="m" style="font-family:var(--body);font-size:12.5px">${esc(r[2])}</td></tr>`).join('') + '</tbody>';
+  $('cut-note').textContent = `${cut.reduce((a, r) => a + r.qty, 0)} pieces; ${sheets.map(s => `${s.bins.length} sheet${s.bins.length > 1 ? 's' : ''} of ${s.T} mm (${Math.round(s.use * 100)}% used)`).join(', ')}, ${M.P.sheet.L} x ${M.P.sheet.W}`;
+  const html = [];
+  for (const s of sheets) s.bins.forEach((b, i) => {
+    const sc = 0.15, W = b.L * sc, H = b.W * sc;
+    const items = b.items.map(it => { const x = it.x * sc, y = (b.W - it.y - it.h) * sc, w = it.w * sc, h = it.h * sc, fs = Math.max(6, Math.min(16, Math.min(w / 3, h * 0.6)));
+      return `<rect class="pc" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" stroke-width="1"><title>${esc(it.mark + ' ' + it.name + ', ' + f1(it.L) + ' x ' + f1(it.W))}</title></rect>${w > 12 && h > 8 ? `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + fs * 0.35).toFixed(1)}" text-anchor="middle" font-size="${fs.toFixed(1)}">${it.mark}</text>` : ''}`; }).join('');
+    html.push(`<div class="sheet"><div class="scap"><span>${s.T} mm, sheet ${i + 1}</span><span>${b.L} x ${b.W}</span></div><svg viewBox="-2 -2 ${W + 4} ${H + 4}" role="img" aria-label="Sheet ${i + 1} layout"><rect class="board" x="0" y="0" width="${W}" height="${H}" stroke-width="1"/>${items}</svg></div>`);
+  });
+  $('sheets').innerHTML = html.join('');
+}
+
+/* ---------------------------------------------------------------- files */
+function status(t) { $('status').textContent = t || ''; }
+async function copyText(t, what) {
+  try { await navigator.clipboard.writeText(t); status(`${what} copied.`); }
+  catch (e) { $('io').value = t; $('io').select(); status(`Couldn't reach the clipboard; ${what.toLowerCase()} is in the box on the right, selected.`); }
+}
+function csv() {
+  const q = (s) => /[",\n]/.test(String(s)) ? `"${String(s).replace(/"/g, '""')}"` : String(s);
+  const rows = [['#', 'Part', 'Qty', 'Length mm', 'Width mm', 'Thickness mm', 'Where']];
+  for (const r of model._cut) rows.push([r.mark, r.name, r.qty, f1(r.L), f1(r.W), r.T, r.where.join(' ')]);
+  return rows.map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
+}
+
+/* ---------------------------------------------------------------- locked design
+   AES-256-GCM with a key from PBKDF2-SHA256 (600 000 rounds, random salt). The site only ever holds the ciphertext. */
+const b64 = (u8) => { let s = ''; for (const c of u8) s += String.fromCharCode(c); return btoa(s); };
+const unb64 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function keyFrom(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptDesign(pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 600000;
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFrom(pw, salt, iter), new TextEncoder().encode(JSON.stringify({ v: 1, state })));
+  return { v: 1, kdf: 'PBKDF2-SHA256', cipher: 'AES-256-GCM', iter, salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+}
+async function decryptDesign(lock, pw) {
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(lock.iv) }, await keyFrom(pw, unb64(lock.salt), lock.iter), unb64(lock.ct));
+  return JSON.parse(new TextDecoder().decode(pt)).state;
+}
+let lockData = null;
+async function findLock() {
+  try {
+    const r = await fetch('design.lock.json', { cache: 'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.ct && j.iv && j.salt) { lockData = j; $('unlock-row').hidden = false; $('lock-none').hidden = true; $('hdr-unlock').hidden = false; }
+  } catch (e) { /* no lock file here */ }
+}
+function lockStatus(t) { $('lock-status').textContent = t || ''; }
+function bindLock() {
+  const unlock = async () => {
+    if (!lockData) return;
+    const pw = $('pw-open').value; if (!pw) { lockStatus('Enter the password first.'); return; }
+    lockStatus('Unlocking...');
+    try { state = C.normalize(await decryptDesign(lockData, pw)); $('pw-open').value = ''; save(); renderEditor(); rebuild(false); lockStatus('Your design is loaded, and remembered in this browser until you forget it.'); }
+    catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
+  };
+  $('unlock').addEventListener('click', unlock);
+  $('pw-open').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
+  $('hdr-unlock').addEventListener('click', () => { $('lockbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('pw-open').focus(), 400); });
+  $('lock-again').addEventListener('click', () => {
+    try { localStorage.removeItem(LS); } catch (e) { /* storage off */ }
+    state = C.normalize(C.MINE); renderEditor(); rebuild(false); lockStatus('Forgotten on this device; the page is back to the example design.');
+  });
+  $('encrypt').addEventListener('click', async () => {
+    const a = $('pw-new').value, b = $('pw-new2').value;
+    if (a.length < 12) { lockStatus('Use 12 characters or more; a few random words is easiest.'); return; }
+    if (a !== b) { lockStatus('The two passwords are different.'); return; }
+    lockStatus('Encrypting...');
+    try { $('lock-out').value = JSON.stringify(await encryptDesign(a)); $('pw-new').value = $('pw-new2').value = ''; lockStatus('Encrypted. Save it as design.lock.json next to index.html.'); }
+    catch (e) { lockStatus('This browser couldn\'t encrypt: ' + e.message); }
+  });
+  $('copy-lock').addEventListener('click', async () => { const t = $('lock-out').value; if (!t) { lockStatus('Encrypt first.'); return; } try { await navigator.clipboard.writeText(t); lockStatus('Encrypted design copied.'); } catch (e) { $('lock-out').select(); lockStatus('Copy it from the box; it is selected.'); } });
+  $('dl-lock').addEventListener('click', async () => {
+    const data = $('lock-out').value; if (!data) { lockStatus('Encrypt first.'); return; }
+    try { if (window.claude && typeof window.claude.use === 'function') { const d = await window.claude.use('downloads'); await d.save({ filename: 'design.lock.json', data }); lockStatus('Saved.'); return; } } catch (e) { /* fall through */ }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = 'design.lock.json'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 2000);
+    lockStatus('If nothing downloaded, copy it instead: this view may block downloads.');
+  });
+}
+
+/* ---------------------------------------------------------------- actions */
+// keep "Same as" links on the same sections when sections move: map old index -> new index (null = gone)
+function remap(fn) { for (const sc of state.sections) if (sc.wMode === 'link' && sc.link !== null) { const t = fn(sc.link); if (t === null) { sc.wMode = 'auto'; sc.link = null; } else sc.link = t; } }
+function act(b) {
+  if (b.dataset.act === 'doorsclose' || b.dataset.act === 'doorspark') {
+    const R0 = model.front.rail;
+    if (b.dataset.act === 'doorsclose') doorPos.splice(0, doorPos.length, ...model.front.closed);
+    else model.front.doors.forEach(o => { const sameT = model.front.doors.filter(q => q.track === o.track), k = sameT.indexOf(o), half = k < sameT.length / 2; doorPos[o.door] = half ? R0.x0 + k * R0.dw : R0.x1 - (sameT.length - k) * R0.dw; });
+    saveDoors(); if (!view.doors) { view.doors = true; $('v-doors').checked = true; }
+    if (viewer) { viewer.set(view); viewer.placeDoors(); }
+    renderElev(); return;
+  }
+  const a = b.dataset.act, i = Number(b.dataset.s), k = Number(b.dataset.z), S = state.sections;
+  if (a === 'sinc') { const c = C.clone(S[S.length - 1]); c.w = null; c.wMode = c.wMode === 'obs' ? 'auto' : c.wMode; S.push(c); state.panels.splice(state.panels.length - 1, 0, { h: null }); }
+  else if (a === 'sdec') { if (S.length > 1) { S.pop(); remap(t => t >= S.length ? null : t); state.panels.splice(state.panels.length - 2, 1); } }
+  else if (a === 'equal') S.forEach(s => { s.wMode = 'auto'; });
+  else if (a === 'kickall') S.forEach(s => { s.kick = true; });
+  else if (a === 'kicknone') S.forEach(s => { s.kick = false; });
+  else if (a === 'mirror') { const n = S.length; for (let q = 0; q < Math.floor(n / 2); q++) { const top = S[n - 1 - q].top; S[n - 1 - q] = Object.assign(C.clone(S[q]), { wMode: 'link', link: q, top: S[q].top === null ? null : top }); } }
+  else if (a === 'dadd') { S[i].zones[k].list.push(b.dataset.id); }
+  else if (a === 'ddel') { const l = S[i].zones[k].list; if (l.length > 1) l.splice(Number(b.dataset.f), 1); }
+  else if (a === 'sizeadd') { state.drawerSizes.push({ id: 's' + Date.now().toString(36), name: 'New size', box: 150, front: null }); }
+  else if (a === 'sizedel') { const n = Number(b.dataset.n); if (state.drawerSizes.length > 1) state.drawerSizes.splice(n, 1); }
+  else if (a === 'zadd') { const t = b.dataset.type, z = t === 'drawers' ? { type: t, h: null, mode: 'sized', list: [state.drawerSizes[0].id, state.drawerSizes[0].id, state.drawerSizes[0].id], n: 3, hs: '' } : t === 'shelves' ? { type: t, h: 400, n: 1 } : t === 'hang' ? { type: t, h: 900, drop: null } : { type: t, h: 300 }; S[i].zones.push(z); openSecs.add(i); }
+  else if (a === 'zup') { const z = S[i].zones; if (k < z.length - 1) [z[k], z[k + 1]] = [z[k + 1], z[k]]; }
+  else if (a === 'zdn') { const z = S[i].zones; if (k > 0) [z[k], z[k - 1]] = [z[k - 1], z[k]]; }
+  else if (a === 'zdel') { if (S[i].zones.length > 1) S[i].zones.splice(k, 1); }
+  else if (a === 'sleft' && i > 0) { [S[i], S[i - 1]] = [S[i - 1], S[i]]; remap(t => t === i ? i - 1 : t === i - 1 ? i : t); sel = i - 1; openSecs.add(i - 1); }
+  else if (a === 'sright' && i < S.length - 1) { [S[i], S[i + 1]] = [S[i + 1], S[i]]; remap(t => t === i ? i + 1 : t === i + 1 ? i : t); sel = i + 1; openSecs.add(i + 1); }
+  else if (a === 'sdup') { remap(t => t > i ? t + 1 : t); S.splice(i + 1, 0, C.clone(S[i])); state.panels.splice(i + 1, 0, { h: null }); S[i + 1].wMode = S[i].wMode === 'link' ? 'link' : 'auto'; }
+  else if (a === 'sdel' && S.length > 1) { S.splice(i, 1); remap(t => t === i ? null : t > i ? t - 1 : t); state.panels.splice(i === S.length ? i : i + 1, 1); sel = Math.min(sel, S.length - 1); }
+  else if (a === 'rib') { const j = Number(b.dataset.j), v = b.dataset.v; state.panels[j][b.dataset.key || 'h'] = v === '' ? null : v === 'ceil' ? state.H : Number(v); }
+  else return;
+  structural();
+}
+function selectSection(i, scroll) {
+  sel = i; openSecs.add(i);
+  showTab('sections');
+  document.querySelectorAll('details.sec').forEach(d => { d.classList.toggle('sel', Number(d.dataset.sec) === i); if (Number(d.dataset.sec) === i) d.open = true; });
+  if (viewer) { viewer.opts.sel = i; viewer.setModel(model, true); viewer.set(view); }
+  renderElev();
+  if (scroll) { const d = document.querySelector(`details.sec[data-sec="${i}"]`); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+function showTab(t) {
+  const tabs = [...document.querySelectorAll('.tabs [data-tab]')];
+  if (!tabs.some(b => b.dataset.tab === t)) t = 'sections';
+  tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  document.querySelectorAll('.pane').forEach(p => { p.hidden = p.dataset.pane !== t; });
+  writeLS(LS_TAB, t);
+}
+function applyTheme(t) {
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeSet === (t || 'auto'))));
+  if (viewer) { const c = getComputedStyle(document.documentElement).getPropertyValue('--viewer').trim(); if (c) viewer.setBackground(new THREE.Color(c).getHex()); }
+}
+
+function bind() {
+  const rail = $('rail');
+  const onEdit = (e, commit) => {
+    const el = e.target; if (!el.dataset || !el.dataset.k) return;
+    const t = el.dataset.t; let v;
+    if (t === 'wmode') {
+      const i = Number(el.dataset.k.split('.')[1]), sc = state.sections[i], val = el.value;
+      if (val.startsWith('link:')) { sc.wMode = 'link'; sc.link = Number(val.slice(5)); }
+      else { if ((val === 'fixed' || val === 'balance') && sc.w === null) sc.w = Math.round(model.widths[i] * 2) / 2; sc.wMode = val; }
+      structural(); return;
+    }
+    if (t === 'bool') v = el.checked;
+    else if (t === 'str') v = el.value;
+    else if (t === 'nnum') v = el.value === '' ? null : Number(el.value);
+    else { if (el.value === '' || !isFinite(Number(el.value))) return; v = Number(el.value); }
+    setPath(state, el.dataset.k, v);
+    if (el.dataset.r !== undefined && commit) structural(); else schedule();
+  };
+  rail.addEventListener('input', (e) => { if (e.target.type !== 'checkbox' && e.target.tagName !== 'SELECT') onEdit(e, false); });
+  rail.addEventListener('change', (e) => { onEdit(e, true); });
+  rail.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]'); if (b) { act(b); return; }
+    const sm = e.target.closest('details.sec > summary');
+    if (sm) { const d = sm.parentElement, i = Number(d.dataset.sec); setTimeout(() => { if (d.open) openSecs.add(i); else openSecs.delete(i); }, 0); if (sel !== i) { sel = i; document.querySelectorAll('details.sec').forEach(x => x.classList.toggle('sel', Number(x.dataset.sec) === i)); if (viewer) { viewer.opts.sel = i; viewer.setModel(model, true); viewer.set(view); } renderElev(); } }
+  });
+  document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
+  $('elev').addEventListener('click', (e) => { const r = e.target.closest('[data-sec]'); if (r) selectSection(Number(r.dataset.sec), true); });
+  document.querySelectorAll('.tools [data-view]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tools [data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (viewer) viewer.view(b.dataset.view);
+  }));
+  const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.swing = $('v-swing').checked; view.openAll = $('v-open').checked; if (viewer) viewer.set(view); renderElev(); };
+  ['v-doors', 'v-fascia', 'v-swing', 'v-open'].forEach(id => $(id).addEventListener('change', chips));
+  $('obs-angle').addEventListener('input', (e) => { view.angle = Number(e.target.value); $('obs-out').textContent = view.angle + '°'; if (viewer) viewer.set(view); renderSide(); });
+  $('preset').addEventListener('change', (e) => { const p = C.PRESETS[e.target.value]; if (!p) return; state = C.normalize(p); e.target.value = ''; save(); renderEditor(); rebuild(true); status('Design loaded.'); });
+  $('copy-csv').addEventListener('click', () => copyText(csv(), 'Cut list'));
+  $('copy-json').addEventListener('click', () => copyText(JSON.stringify(state, null, 1), 'Settings'));
+  $('dl-json').addEventListener('click', async () => {
+    const data = JSON.stringify(state, null, 1);
+    try {
+      if (window.claude && typeof window.claude.use === 'function') { const d = await window.claude.use('downloads'); await d.save({ filename: 'master-robe-settings.json', data }); status('Settings saved.'); return; }
+    } catch (e) { /* fall through */ }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = 'master-robe-settings.json'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 2000);
+    status('If nothing downloaded, use Copy settings instead: this view may block downloads.');
+  });
+  $('load-json').addEventListener('click', () => { try { state = C.normalize(JSON.parse($('io').value)); save(); renderEditor(); rebuild(false); status('Settings loaded.'); } catch (e) { status('That text is not a settings file from this page.'); } });
+  $('reset').addEventListener('click', () => { state = C.normalize(C.MINE); save(); renderEditor(); rebuild(false); status('Back to the reworked design.'); });
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.addEventListener('click', () => { applyTheme(b.dataset.themeSet); writeLS(LS_THEME, b.dataset.themeSet); }));
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', () => applyTheme(readLS(LS_THEME) || 'auto'));
+}
+
+function start() {
+  try {
+    if (window.RobeViewer) {
+      viewer = new window.RobeViewer($('viewer'));
+      viewer.onClick = (h) => {
+        if (!h) return;
+        if (h.drawer) viewer.toggleDrawer(h.drawer);
+        else if (h.obs) { view.angle = view.angle > 0 ? 0 : model.P.box.maxAngle; $('obs-angle').value = view.angle; $('obs-out').textContent = view.angle + '°'; viewer.set(view); renderSide(); }
+        else if (h.part && h.part.sec !== undefined) selectSection(h.part.sec, true);
+      };
+      let elevT = 0;
+      viewer.onDoorsMoved = (done) => { if (done) { saveDoors(); renderElev(); } else if (!elevT) elevT = setTimeout(() => { elevT = 0; renderElev(); }, 120); };
+      viewer.onViewChange = (v) => document.querySelectorAll('.tools [data-view]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.view === v)));
+    } else $('front-tag').textContent = 'The 3D library did not load. The drawing, checks and cut list still work.';
+  } catch (e) { console.error(e); $('front-tag').textContent = 'This browser could not start the 3D view (WebGL). The drawing, checks and cut list still work.'; }
+  applyTheme(readLS(LS_THEME) || 'auto');
+  showTab(readLS(LS_TAB) || 'sections');
+  model = C.layout(state);
+  renderEditor();
+  bind(); bindLock(); findLock();
+  rebuild(false);
+  if (viewer) viewer.view('iso');
+  window.__robe = { get model() { return model; }, get state() { return state; } };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
+
+</body>
+</html>
