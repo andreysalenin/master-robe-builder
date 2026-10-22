@@ -2,7 +2,7 @@
 
 A parametric wardrobe configurator in a single HTML file. Set the cavity, the sections, the partitions and what goes in each section, and the page rebuilds a 3D model, a dimensioned elevation, live clearance checks, a cut list with sheet layouts and a hardware list.
 
-Open `index.html` in a browser, or use the GitHub Pages site. Nothing to install; the only dependency, three.js r128, loads from cdnjs.
+Use the GitHub Pages site, or serve the folder (the shoe models load from `shoes/`). Nothing to install; the only dependency, three.js r128, loads from cdnjs.
 
 ## What you can change
 
@@ -12,7 +12,7 @@ Open `index.html` in a browser, or use the GitHub Pages site. Nothing to install
 - **Partitions:** end panels and partitions, each single or doubled, every leaf with its own height (auto, a number, or up to the ceiling).
 - **Obstruction:** something in the cavity to keep clear of, with its position, size and an optional bottom-hinged door whose swept space is checked against every part. Off by default.
 - **Sliding doors:** count, finishes, which finish runs on the outer track, rail length, overlap, fascia. Drag a door in the 3D view to slide it; pushing a door into the next one on its track moves both at half speed.
-- **Shoes:** pairs of shoes in the end sections (dress shoes on the bottom of the hanging space, casual ones in the cubby below), men's or women's on each side. The shoes are modelled in the page itself.
+- **Shoes:** two pairs a row in the end sections (dress shoes on the bottom of the hanging space, casual ones in the cubby below), men's or women's on each side, staggered front and back where the section is too narrow for them side by side. The eight shoe models in `shoes/` were made for this project; if they can't load (a page opened on its own), simpler built-in shapes stand in.
 - **Materials:** board thicknesses (16 mm by default), drawer allowances, sheet size, kerf and trim.
 
 ## Configurations
