@@ -14,15 +14,19 @@ Open `index.html` in a browser, or use the GitHub Pages site. Nothing to install
 - **Sliding doors:** count, finishes, which finish runs on the outer track, rail length, overlap, fascia. Drag a door in the 3D view to slide it; pushing a door into the next one on its track moves both at half speed.
 - **Materials:** board thicknesses (16 mm by default), drawer allowances, sheet size, kerf and trim.
 
+## Configurations
+
+The **Configuration** menu at the top switches between the built-in designs (AAGL - A to D and the company's rev.01, rev.02 and rev.04) and any you add. The circled **+** adds a configuration as a copy of the one you are looking at, under a name you choose; the circled **−** removes the one you are looking at (removed built-in ones can be brought back from Files and settings). Each configuration keeps its own edits in your browser.
+
 ## Keeping and sharing a design
 
 Settings are saved in your browser as you go. **Copy settings** puts the design on the clipboard as JSON; paste it into the box under Files and settings to load it again. **Copy cut list as CSV** gives a spreadsheet-ready cut list.
 
 ## Locked design
 
-A private design can sit next to the page as `design.lock.json`, encrypted with a password (AES-256-GCM, key from PBKDF2-SHA256 with 600 000 rounds and a random salt). When that file is present, the page shows **Unlock my design**; the right password loads it into the browser, and **Forget my design on this device** clears it again.
+A private design can sit next to the page as `design.lock.json`, encrypted with a password (AES-256-GCM, key from PBKDF2-SHA256 with 600 000 rounds and a random salt). When that file is present, the page shows **Unlock my design**; the right password loads the private versions of the configurations into the browser, and **Forget my design on this device** clears it again.
 
-To make or replace the file: open the builder, set the design up, then under Files and settings open **Encrypt this design for publishing**, enter a password twice and save the result as `design.lock.json` in the repository root. The password never leaves the browser and is never stored. Use a long one (four or more random words): the file is public, so anyone can copy it and try passwords offline.
+To make or replace the file: open the builder, set the design up, then under Files and settings open **Encrypt every configuration for publishing**, enter a password twice and save the result as `design.lock.json` in the repository root. The password never leaves the browser and is never stored. Use a long one (four or more random words): the file is public, so anyone can copy it and try passwords offline.
 
 ## Notes
 
