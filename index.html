@@ -188,12 +188,12 @@ details[open] > summary .chev { transform: rotate(45deg); }
 .out-actions { display: grid; gap: 8px; }
 .out-actions .btn { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 8px; }
 .out-actions .btn span:last-child { font-family: var(--mono); font-size: 12px; opacity: .8; }
-.cfg { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.cfg { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; max-width: 100%; }
 .hdr-r { min-width: 0; }
-.cfg label { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-.cfg select { flex: 1 1 150px; min-width: 0; max-width: 240px; font-weight: 500; }
-.circ { width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; border-radius: 50%; display: inline-grid; place-items: center; }
-.circ svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.cfg label { flex: none; white-space: nowrap; font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.cfg select { flex: 1 1 auto; width: 200px; min-width: 0; max-width: 240px; font-weight: 500; }
+.circ { flex: none; width: 30px; height: 30px; padding: 0; margin: 0; border: 0; line-height: 0; vertical-align: middle; background: transparent; color: var(--ink); cursor: pointer; border-radius: 50%; display: inline-grid; place-items: center; }
+.circ svg { display: block; width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 .circ:hover { color: var(--accent); }
 .circ:disabled { color: var(--line); cursor: not-allowed; }
 .modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--scrim); padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
