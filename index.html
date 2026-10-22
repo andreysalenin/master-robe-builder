@@ -1531,12 +1531,15 @@ class Viewer {
     const lib = root.RobeCore, loader = new THREE.GLTFLoader();
     for (const style of Object.keys(lib.SHOE_FALLBACK)) {
       if (!lib.SHOE_META[style]) continue;
-      loader.load('shoes/' + style + '.glb', (g) => {
+      const done = (g) => {
         g.scene.traverse(o => { if (o.isMesh) { o.userData.keepGeo = true; o.userData.noFit = true; } });
         this.glb[style] = g.scene;
         clearTimeout(this.glbT);
         this.glbT = setTimeout(() => { if (this.M) { if (this.shoeGroup) this.root.remove(this.shoeGroup); this.buildShoes(this.M, (x) => x - this.M.P.W / 2); this.dirty = true; } }, 60);
-      }, undefined, () => { /* not there (a page opened on its own): keep the built-in shape */ });
+      };
+      // a .glb next to the page, or the same model as glTF JSON where binary models can't be served; failing both
+      // (a page opened on its own), the built-in shape stays
+      loader.load('shoes/' + style + '.glb', done, undefined, () => loader.load('shoes/' + style + '.gltf.json', done, undefined, () => {}));
     }
   }
   buildShoes(M, X) {
