@@ -12,6 +12,7 @@ Open `index.html` in a browser, or use the GitHub Pages site. Nothing to install
 - **Partitions:** end panels and partitions, each single or doubled, every leaf with its own height (auto, a number, or up to the ceiling).
 - **Obstruction:** something in the cavity to keep clear of, with its position, size and an optional bottom-hinged door whose swept space is checked against every part. Off by default.
 - **Sliding doors:** count, finishes, which finish runs on the outer track, rail length, overlap, fascia. Drag a door in the 3D view to slide it; pushing a door into the next one on its track moves both at half speed.
+- **Shoes:** pairs of shoes in the end sections (dress shoes on the bottom of the hanging space, casual ones in the cubby below), men's or women's on each side. The shoes are modelled in the page itself.
 - **Materials:** board thicknesses (16 mm by default), drawer allowances, sheet size, kerf and trim.
 
 ## Configurations

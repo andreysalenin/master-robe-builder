@@ -159,6 +159,8 @@ details[open] > summary .chev { transform: rotate(45deg); }
 .chips label { display: flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer; border-left: 1px solid var(--line); }
 .chips label:first-child { border-left: 0; }
 .chips input { accent-color: var(--accent); }
+.chips select { border: 0; background: transparent; padding: 0; font-size: 13px; max-width: 200px; cursor: pointer; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .vbar { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; flex-wrap: wrap; pointer-events: none; }
 .swing { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 10px; flex: 1 1 300px; max-width: 480px; }
 .swing label { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
@@ -329,7 +331,9 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
             <label><input type="checkbox" id="v-fascia" checked> Fascia</label>
             <label id="chip-swing"><input type="checkbox" id="v-swing" checked> Door swing</label>
             <label><input type="checkbox" id="v-open"> Drawers open</label>
-            <label><input type="checkbox" id="v-shoes" checked> Shoes</label>
+            <label class="shoe-pick"><span class="sr">Shoes</span><select id="v-shoes" aria-label="Shoes in the end sections">
+              <option value="MW">Shoes: men's | women's</option><option value="WM">Shoes: women's | men's</option>
+              <option value="MM">Shoes: men's | men's</option><option value="WW">Shoes: women's | women's</option><option value="off">No shoes</option></select></label>
           </div>
         </div>
         <div class="vbar">
@@ -1017,42 +1021,273 @@ function slideDoors(pos, tracks, dw, x0, x1, i, raw) {
   return pos;
 }
 
-/* Shoes on the bottom of the two end sections, toes to the front, as many pairs across as fit. Each pair takes the
-   next style that fits under whatever is above it: in a 134 cubby sneakers and pumps, under hanging boots too, under
-   a low shelf loafers or flats. Profiles are side views, heel at 0, toe at len, in mm. */
-const SHOE_STYLES = {
-  sneaker: { h: 100, len: 262, w: 88, sole: 18, prof: [[0, 8], [4, 0], [242, 0], [262, 10], [264, 28], [250, 46], [192, 58], [142, 78], [97, 92], [30, 100], [6, 96], [-2, 60]] },
-  boot: { h: 180, len: 262, w: 90, sole: 18, prof: [[0, 4], [4, 0], [242, 0], [262, 10], [264, 28], [250, 46], [202, 58], [152, 80], [122, 120], [112, 180], [10, 180], [0, 170], [-2, 60]] },
-  pump: { h: 96, len: 240, w: 76, sole: 0, prof: [[4, 0], [26, 0], [30, 62], [90, 48], [150, 14], [170, 2], [230, 0], [240, 10], [234, 26], [190, 34], [140, 38], [60, 58], [20, 82], [6, 96], [0, 90]] },
-  loafer: { h: 62, len: 255, w: 86, sole: 10, prof: [[0, 4], [4, 0], [240, 0], [255, 10], [255, 24], [225, 40], [165, 52], [50, 58], [12, 62], [0, 56]] },
-  flat: { h: 38, len: 238, w: 80, sole: 6, prof: [[0, 2], [4, 0], [226, 0], [238, 8], [230, 20], [178, 26], [40, 30], [8, 38], [0, 32]] },
+const sstep = (a, b, t) => { const x = Math.min(1, Math.max(0, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
+// a smooth curve through [t, v] points (Catmull-Rom, clamped ends)
+function shoeCurve(pts) {
+  return (t) => {
+    if (t <= pts[0][0]) return pts[0][1];
+    if (t >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+    let i = 0; while (pts[i + 1][0] < t) i++;
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const u = (t - p1[0]) / (p2[0] - p1[0]);
+    const m1 = (p2[1] - p0[1]) / (p2[0] - p0[0] || 1) * (p2[0] - p1[0]), m2 = (p3[1] - p1[1]) / (p3[0] - p1[0] || 1) * (p2[0] - p1[0]);
+    const u2 = u * u, u3 = u2 * u;
+    return (2 * u3 - 3 * u2 + 1) * p1[1] + (u3 - 2 * u2 + u) * m1 + (-2 * u3 + 3 * u2) * p2[1] + (u3 - u2) * m2;
+  };
+}
+// half-width along the length (fraction of W/2), before the heel and toe are rounded off by circular arcs
+const SHOE_FOOT = {
+  round: [[0, 0.66], [0.08, 0.76], [0.2, 0.79], [0.36, 0.71], [0.52, 0.84], [0.66, 0.99], [0.78, 0.98], [0.88, 0.88], [0.95, 0.7], [1, 0.5]],
+  sneaker: [[0, 0.72], [0.08, 0.8], [0.2, 0.82], [0.36, 0.76], [0.52, 0.88], [0.66, 1.0], [0.8, 0.99], [0.9, 0.9], [0.96, 0.74], [1, 0.56]],
+  pointed: [[0, 0.62], [0.08, 0.71], [0.2, 0.74], [0.36, 0.66], [0.52, 0.82], [0.66, 0.98], [0.76, 0.93], [0.86, 0.72], [0.93, 0.46], [1, 0.14]],
+  almond: [[0, 0.64], [0.08, 0.73], [0.2, 0.76], [0.36, 0.69], [0.52, 0.84], [0.66, 0.99], [0.78, 0.95], [0.88, 0.8], [0.95, 0.58], [1, 0.34]],
 };
-const SHOE_COLOURS = { sneaker: [[0xf2f0eb, 0x8d9096], [0x2c3e5c, 0xe8e5de]], boot: [[0x6b4a2f, 0x2a2420], [0x26282b, 0x1a1a1a]], pump: [[0x1f1f22, 0x1f1f22], [0x8c2f39, 0x1f1f22]], loafer: [[0x9a6a3f, 0x3b2a1e], [0x4a3426, 0x2a1d14]], flat: [[0xc9a27e, 0x6b4f37], [0xd9cfc4, 0x7b6e60]] };
-function shoes(M) {
-  const out = [], last = M.secs.length - 1, ends = last > 0 ? [0, last] : [0];
-  ends.forEach((i, e) => {
-    const s = M.secs[i], z = s.zones[0];
-    if (!z || z.type === 'drawers') return;
-    const room = z.type === 'shelves' && z.n ? z.gap : z.h;
-    const order = room >= 200 ? ['sneaker', 'boot', 'pump', 'boot'] : ['sneaker', 'pump', 'loafer', 'flat'];
-    const fit = order.filter(k => SHOE_STYLES[k].h <= room - 4);
-    if (!fit.length) return;
-    const pick = (p) => fit[(p + e) % fit.length], pairW = (k) => 2 * SHOE_STYLES[k].w + 6;
-    let n = 0;
-    while (n < 6 && Array.from({ length: n + 1 }, (_, p) => pairW(pick(p)) + 4).reduce((a, b) => a + b, 0) <= s.cw) n++;
-    if (!n) return;
-    const used = Array.from({ length: n }, (_, p) => pairW(pick(p))).reduce((a, b) => a + b, 0), gap = (s.cw - used) / (n + 1);
-    let x = s.cx0 + gap;
-    for (let p = 0; p < n; p++) {
-      const k = pick(p), st = SHOE_STYLES[k], c = SHOE_COLOURS[k][p % 2];
-      const y1 = M.yc1 - 14, y0 = y1 - st.len;
-      for (const side of [0, 1]) out.push({ sec: i, zone: z.k, style: k, x0: x + side * (st.w + 6), w: st.w, y0, len: st.len, z0: z.z0, h: st.h, upper: c[0], sole: c[1] });
-      x += pairW(k) + gap;
+/* Styles. L, W in mm; foot: toe shape; u: height of the upper above its bottom; open: how much of the top is cut away
+   (0 closed, 1 fully open); sole thickness, heel block / stiletto, toe spring. */
+const SHOE_STYLES = {
+  oxford: { gender: 'M', kind: 'dress', L: 292, W: 104, foot: 'round', u: [[0, 64], [0.15, 68], [0.34, 74], [0.46, 77], [0.6, 66], [0.72, 52], [0.84, 42], [0.93, 33], [1, 12]],
+    open: [[0, 0.72], [0.25, 0.7], [0.36, 0.55], [0.44, 0.25], [0.48, 0]], sole: 9, block: 24, blockEnd: 0.25, spring: 12, laces: [0.48, 0.62, 5], welt: true, tongue: [0.36, 0.5] },
+  derby: { gender: 'M', kind: 'dress', L: 290, W: 106, foot: 'almond', u: [[0, 64], [0.15, 68], [0.34, 74], [0.46, 77], [0.6, 66], [0.72, 52], [0.84, 41], [0.93, 31], [1, 11]],
+    open: [[0, 0.72], [0.25, 0.7], [0.36, 0.55], [0.44, 0.25], [0.48, 0]], sole: 10, block: 25, blockEnd: 0.25, spring: 12, laces: [0.48, 0.6, 4], welt: true, tongue: [0.36, 0.5] },
+  sneakerM: { gender: 'M', kind: 'casual', L: 295, W: 108, foot: 'sneaker', u: [[0, 66], [0.14, 72], [0.36, 76], [0.5, 78], [0.62, 68], [0.75, 56], [0.87, 45], [0.95, 36], [1, 14]],
+    open: [[0, 0.62], [0.28, 0.6], [0.4, 0.45], [0.5, 0.14], [0.53, 0]], sole: 26, outsole: 4, block: 0, spring: 10, laces: [0.52, 0.7, 6], sneaker: true, tongue: [0.3, 0.54], stripes: true },
+  loafer: { gender: 'M', kind: 'casual', L: 288, W: 104, foot: 'round', u: [[0, 58], [0.18, 56], [0.38, 60], [0.52, 62], [0.66, 52], [0.8, 43], [0.9, 35], [1, 11]],
+    open: [[0, 0.76], [0.3, 0.72], [0.42, 0.45], [0.5, 0]], sole: 8, block: 18, blockEnd: 0.24, spring: 10, strap: 0.56 },
+  pump: { gender: 'W', kind: 'dress', L: 250, W: 80, foot: 'pointed', u: [[0, 58], [0.16, 52], [0.4, 46], [0.62, 42], [0.76, 38], [0.88, 30], [0.96, 20], [1, 7]],
+    open: [[0, 0.62], [0.12, 0.8], [0.55, 0.84], [0.68, 0.62], [0.74, 0]], sole: 4, heel: 88, stiletto: true, spring: 4 },
+  slingback: { gender: 'W', kind: 'dress', L: 248, W: 80, foot: 'almond', u: [[0, 50], [0.16, 48], [0.4, 44], [0.62, 42], [0.76, 38], [0.88, 30], [0.96, 20], [1, 7]],
+    open: [[0, 0.7], [0.12, 0.84], [0.55, 0.85], [0.68, 0.64], [0.74, 0]], sole: 4, heel: 70, stiletto: true, spring: 4 },
+  sneakerW: { gender: 'W', kind: 'casual', L: 252, W: 82, foot: 'sneaker', u: [[0, 60], [0.14, 64], [0.36, 68], [0.5, 70], [0.62, 62], [0.75, 52], [0.87, 42], [0.95, 33], [1, 12]],
+    open: [[0, 0.62], [0.28, 0.6], [0.4, 0.45], [0.5, 0.14], [0.53, 0]], sole: 24, outsole: 3, block: 0, spring: 9, laces: [0.52, 0.7, 5], sneaker: true, tongue: [0.3, 0.54], heelTab: true },
+  flat: { gender: 'W', kind: 'casual', L: 245, W: 82, foot: 'almond', u: [[0, 40], [0.25, 38], [0.55, 34], [0.72, 33], [0.86, 27], [0.95, 19], [1, 7]],
+    open: [[0, 0.74], [0.5, 0.8], [0.66, 0.6], [0.74, 0]], sole: 5, block: 9, blockEnd: 0.2, spring: 5, bow: 0.8 },
+};
+
+function buildShoe(name) {
+  const S = SHOE_STYLES[name], L = S.L, W = S.W;
+  const base = shoeCurve(SHOE_FOOT[S.foot]), uh0 = shoeCurve(S.u), op = shoeCurve(S.open);
+  // round the heel and the toe off with arcs as long as they are wide
+  const rh = base(0) * W / 2 / L, rt = base(1) * W / 2 / L;
+  const endRound = (t) => t < rh ? Math.sqrt(Math.max(0, 1 - Math.pow((rh - t) / rh, 2))) : t > 1 - rt ? Math.sqrt(Math.max(0, 1 - Math.pow((t - 1 + rt) / rt, 2))) : 1;
+  const hw = (t) => base(t) * endRound(t);
+  // the toe also comes down as it rounds off, so its front is a curve rather than a wall
+  const uh = (t) => t > 1 - rt ? uh0(t) * (0.3 + 0.7 * endRound(t)) : uh0(t);
+  const cy = (t) => 0.06 * W * sstep(0.5, 1, t);                     // toes turn toward the big toe (medial, +y)
+  const spring = (t) => S.spring * Math.pow(sstep(0.82, 1, t), 1.6);
+  // bottom of the sole: on the ground under the heel and the ball, lifted at the arch (heels), sprung at the toe
+  const soleBottom = (t) => {
+    if (S.heel) return S.heel * Math.pow(1 - sstep(0.06, 0.66, t), 1.15) + spring(t);
+    if (S.block) return S.block * (1 - sstep(S.blockEnd, S.blockEnd + 0.16, t)) + spring(t);
+    return spring(t);
+  };
+  const zb = (t) => soleBottom(t) + S.sole + (S.outsole || 0);   // bottom of the upper
+  const parts = [];
+  const mesh = (mat) => { const m = { mat, pos: [], idx: [] }; parts.push(m); return m; };
+  const N = 72;
+  const ts = Array.from({ length: N + 1 }, (_, i) => { const u = i / N; return 0.5 - 0.5 * Math.cos(Math.PI * u); }); // dense at the ends
+  // ---- upper: a loft of superellipse sections, cut open at the top over the collar
+  {
+    const m = mesh('upper'), M = 44;
+    for (const t of ts) {
+      const a = Math.max(0.01, hw(t) * W / 2), H = uh(t), z0 = zb(t), c = cy(t);
+      const o = Math.max(0, Math.min(0.98, op(t)));
+      // cut where |y| < o * a on the top half: for y = a |sin|^(2/n) that is |sin phi0| = o^(n/2)
+      const nu = 2.3, nb = 9;
+      const phi0 = o > 0 ? Math.asin(Math.pow(o, nu / 2)) : 0;
+      for (let j = 0; j <= M; j++) {
+        const phi = phi0 + (2 * Math.PI - 2 * phi0) * j / M;
+        const s = Math.sin(phi), co = Math.cos(phi), n = co >= 0 ? nu : nb;
+        let y = a * Math.sign(s) * Math.pow(Math.abs(s), 2 / n);
+        const zr = Math.sign(co) * Math.pow(Math.abs(co), 2 / n);
+        const z = z0 + (zr + 1) / 2 * H;
+        y *= 1 - 0.2 * Math.pow((z - z0) / H, 1.6);                // narrower toward the top
+        m.pos.push(t * L, c + y, z);
+      }
     }
+    for (let i = 0; i < N; i++) for (let j = 0; j < M; j++) {
+      const a = i * (M + 1) + j, b = a + M + 1;
+      m.idx.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  // ---- insole, visible through the opening
+  {
+    const m = mesh('lining');
+    for (const t of ts) { const a = hw(t) * W / 2 * 0.8, z = zb(t) + 2.5; m.pos.push(t * L, cy(t) - a, z, t * L, cy(t) + a, z); }
+    for (let i = 0; i < N; i++) { const a = i * 2; m.idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+  }
+  // ---- closed lofts (rings of the same count), with flat caps at both ends
+  const loft = (mat, rings) => {
+    const m = mesh(mat), K = rings[0].length;
+    rings.forEach(r => r.forEach(p => m.pos.push(p[0], p[1], p[2])));
+    for (let i = 0; i < rings.length - 1; i++) for (let j = 0; j < K; j++) {
+      const a = i * K + j, b = i * K + (j + 1) % K, c = a + K, d = b + K;
+      m.idx.push(a, c, b, b, c, d);
+    }
+    for (const [ri, flip] of [[0, true], [rings.length - 1, false]]) {
+      const r = rings[ri], cx = r.reduce((s, p) => s + p[0], 0) / K, cyy = r.reduce((s, p) => s + p[1], 0) / K, cz = r.reduce((s, p) => s + p[2], 0) / K;
+      const ci = m.pos.length / 3; m.pos.push(cx, cyy, cz);
+      for (let j = 0; j < K; j++) { const a = ri * K + j, b = ri * K + (j + 1) % K; if (flip) m.idx.push(ci, b, a); else m.idx.push(ci, a, b); }
+    }
+  };
+  // a rounded rectangle across the shoe: half-width a, from z0 to z1, at x
+  const rr = (x, yc, a, z0, z1, K = 28, n = 8) => Array.from({ length: K }, (_, j) => {
+    const phi = 2 * Math.PI * j / K, s = Math.sin(phi), co = Math.cos(phi);
+    return [x, yc + a * Math.sign(s) * Math.pow(Math.abs(s), 2 / n), (z0 + z1) / 2 + (z1 - z0) / 2 * Math.sign(co) * Math.pow(Math.abs(co), 2 / n)];
   });
+  // ---- sole (and the outsole of a sneaker), a little wider than the upper
+  const welt = S.welt ? 3.5 : S.sneaker ? 2.5 : 1.5;
+  const grow = (d) => (t) => { const x = -d + t * (L + 2 * d), tt = Math.min(1, Math.max(0, x / L)); return { x, tt, a: hw(t) * (W / 2 + d) }; };
+  if (S.outsole) { const g = grow(welt + 0.5); loft('outsole', ts.map(t => { const q = g(t); return rr(q.x, cy(q.tt), q.a, soleBottom(q.tt), soleBottom(q.tt) + S.outsole, 28, 6); })); }
+  { const g = grow(welt); loft('sole', ts.map(t => { const q = g(t); return rr(q.x, cy(q.tt), q.a, soleBottom(q.tt) + (S.outsole || 0) - (S.outsole ? 0.3 : 0), zb(q.tt) + 0.6, 28, S.sneaker ? 5 : 8); })); }
+  // ---- heel block
+  if (S.block) {
+    const tE = S.blockEnd, tb = ts.filter(t => t <= tE).concat([tE]);
+    const g = grow(welt - 0.5);
+    loft('heel', tb.map(t => { const q = g(t); return rr(q.x, cy(q.tt), q.a, 0, soleBottom(q.tt) + 0.5); }));
+  }
+  // ---- stiletto: from a seat under the heel cup down to a small tip
+  if (S.stiletto) {
+    const K = 20, rings = [];
+    for (let i = 0; i <= 10; i++) {
+      const f = i / 10, z = S.heel * (1 - f) + 2 * f;            // from the top (f=0) down to the ground
+      const top = soleBottom(0.05);
+      const zz = Math.min(z, top);
+      const len = 46 * Math.pow(1 - f, 1.6) + 9, wid = 30 * Math.pow(1 - f, 1.4) + 8, x0 = 6 + 18 * f;
+      rings.push(Array.from({ length: K }, (_, j) => { const phi = 2 * Math.PI * j / K; return [x0 + len / 2 + len / 2 * Math.cos(phi), wid / 2 * Math.sin(phi), zz]; }));
+    }
+    rings.push(rings[10].map(p => [p[0], p[1], 0]));
+    loft('heel', rings.reverse());
+  }
+  // ---- laces: bars across the throat, lying on the upper
+  // a point on the outside of the upper at section t, across-fraction f (-1..1 of the half-width) on the top half
+  const onTop = (t, f, lift) => {
+    const a = hw(t) * W / 2, H = uh(t), z0 = zb(t), nu = 2.3;
+    const s = Math.pow(Math.abs(f), nu / 2), co = Math.sqrt(Math.max(0, 1 - s * s));
+    const zr = Math.pow(co, 2 / nu), z = z0 + (zr + 1) / 2 * H;
+    const y = a * Math.sign(f) * Math.abs(f) * (1 - 0.2 * Math.pow((z - z0) / H, 1.6));
+    return [t * L, cy(t) + y, z + lift];
+  };
+  const cord = (mat, pts, r) => {
+    const K = 7, rings = pts.map((p, i) => {
+      const q = pts[Math.min(pts.length - 1, i + 1)], o = pts[Math.max(0, i - 1)];
+      const tx = q[0] - o[0], ty = q[1] - o[1], tz = q[2] - o[2], tl = Math.hypot(tx, ty, tz) || 1;
+      // two directions across the cord: along the shoe, and the normal of the cord and that
+      const ax = [1, 0, 0], bx = [ty * ax[2] - tz * ax[1], tz * ax[0] - tx * ax[2], tx * ax[1] - ty * ax[0]].map(v => v / tl);
+      return Array.from({ length: K }, (_, j) => { const ph = 2 * Math.PI * j / K, c = Math.cos(ph) * r, sn = Math.sin(ph) * r; return [p[0] + c, p[1] + bx[1] * sn, p[2] + bx[2] * sn]; });
+    });
+    loft(mat, rings);
+  };
+  if (S.laces) {
+    const [t0, t1, n] = S.laces;
+    for (let k = 0; k < n; k++) {
+      const t = t0 + (t1 - t0) * k / (n - 1);
+      cord('lace', Array.from({ length: 9 }, (_, i) => onTop(t, -0.42 + 0.84 * i / 8, 1.4)), 1.6);
+    }
+  }
+  // a point on the side of the upper at section t: side +1 / -1, at height fraction h (0 bottom .. 1 top)
+  const onSide = (t, side, h, lift) => {
+    const a = hw(t) * W / 2, H = uh(t), z0 = zb(t), zr = 2 * h - 1, n = zr >= 0 ? 2.3 : 9;
+    const co = Math.pow(Math.abs(zr), n / 2), sn = Math.sqrt(Math.max(0, 1 - co * co)), z = z0 + h * H;
+    const y = a * Math.pow(sn, 2 / n) * (1 - 0.2 * Math.pow(h, 1.6));
+    return [t * L, cy(t) + side * (y + lift), z];
+  };
+  // the tongue, lying in the opening
+  if (S.tongue) {
+    const [t0, t1] = S.tongue, K = 16, rings = [];
+    for (let i = 0; i <= 10; i++) {
+      const t = t0 + (t1 - t0) * i / 10, top = onTop(t, 0, -1.5), a = hw(t) * W / 2 * 0.44;
+      rings.push(Array.from({ length: K }, (_, j) => { const ph = 2 * Math.PI * j / K; return [top[0], top[1] + a * Math.cos(ph), top[2] - 2.5 + 2.5 * Math.sin(ph)]; }));
+    }
+    loft('tongue', rings);
+  }
+  // sneaker details: two stripes along each side, or a heel tab
+  if (S.stripes) for (const side of [-1, 1]) for (const dh of [0, 0.13]) cord('accent', Array.from({ length: 14 }, (_, i) => { const f = i / 13; return onSide(0.3 + 0.36 * f, side, 0.18 + dh + 0.4 * f, 0.4); }), 2.2);
+  if (S.heelTab) cord('accent', Array.from({ length: 9 }, (_, i) => onSide(0.012 + 0.0, 1, 0.08 + 0.85 * i / 8, 0.6)).map(p => [p[0] - 1, cy(0) , p[2]]), 4.5);
+  // a seam across the toe of dress shoes
+  if (S.welt) cord('seam', Array.from({ length: 21 }, (_, i) => onTop(0.8, -0.93 + 1.86 * i / 20, 0.3)), 0.9);
+  // ---- loafer strap and ballet bow
+  if (S.strap) {
+    for (const dx of [-0.018, 0, 0.018]) cord('lace', Array.from({ length: 13 }, (_, i) => onTop(S.strap + dx, -0.8 + 1.6 * i / 12, 1.2)), 2.4);
+  }
+  if (S.bow) {
+    const t = S.bow, z = zb(t) + uh(t) - 1, x = t * L, c = cy(t);
+    for (const sgn of [-1, 1]) loft('lace', [[[x - 6, c, z], [x + 6, c, z], [x + 6, c, z + 5], [x - 6, c, z + 5]], [[x - 5, c + sgn * 14, z + 1], [x + 5, c + sgn * 14, z + 1], [x + 5, c + sgn * 14, z + 4], [x - 5, c + sgn * 14, z + 4]]]);
+  }
+  let zmax = 0, ymax = 0;
+  for (const p of parts) for (let i = 0; i < p.pos.length; i += 3) { zmax = Math.max(zmax, p.pos[i + 2]); ymax = Math.max(ymax, Math.abs(p.pos[i + 1])); }
+  return { name, style: S, parts, height: zmax, halfWidth: ymax, length: L };
+}
+
+// finishes: [colour, roughness, clearcoat] for each part of each style
+const SHOE_LOOKS = {
+  oxford: { upper: [0x1a1210, 0.32, 0.6], tongue: [0x1a1210, 0.4], sole: [0x2a1d16, 0.6], heel: [0x24180f, 0.6], lace: [0x111111, 0.8], seam: [0x050505, 0.6], lining: [0xb38b62, 0.8] },
+  derby: { upper: [0x5a2c17, 0.38, 0.5], tongue: [0x5a2c17, 0.45], sole: [0x2a1d16, 0.6], heel: [0x24180f, 0.6], lace: [0x2a160c, 0.8], seam: [0x3a1a0c, 0.6], lining: [0xb38b62, 0.8] },
+  sneakerM: { upper: [0xeeece6, 0.6], tongue: [0xeeece6, 0.6], accent: [0x2b3a55, 0.7], sole: [0xfafaf7, 0.55], outsole: [0x8f7d62, 0.8], lace: [0xf6f6f2, 0.8], lining: [0x2b3a55, 0.9] },
+  loafer: { upper: [0x8e5f36, 0.85], sole: [0x3b2a1e, 0.6], heel: [0x2a1d14, 0.6], lace: [0x6a4224, 0.8], lining: [0xc9a27e, 0.8] },
+  pump: { upper: [0x0d0d0f, 0.15, 1], sole: [0x1a1a1a, 0.5], heel: [0x0d0d0f, 0.2, 1], lining: [0xd9b49a, 0.8] },
+  slingback: { upper: [0xd7ae92, 0.35, 0.3], sole: [0x3a2a20, 0.5], heel: [0xd7ae92, 0.35, 0.3], lining: [0xe8d2c0, 0.8] },
+  sneakerW: { upper: [0xf3f1ec, 0.5], tongue: [0xf3f1ec, 0.5], accent: [0xc98f7a, 0.6], sole: [0xffffff, 0.55], outsole: [0xe6e2da, 0.7], lace: [0xffffff, 0.8], lining: [0xd8c3b3, 0.9] },
+  flat: { upper: [0x1c1c1e, 0.45, 0.2], sole: [0x2a2420, 0.6], heel: [0x2a2420, 0.6], lace: [0x1c1c1e, 0.45], lining: [0xc8a586, 0.8] },
+};
+const SHOE_SETS = { M: { dress: ['oxford', 'derby'], casual: ['sneakerM', 'loafer'] }, W: { dress: ['pump', 'slingback'], casual: ['sneakerW', 'flat'] } };
+const shoeCache = {};
+function shoeModel(name) {
+  if (!shoeCache[name]) {
+    const m = buildShoe(name);
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const p of m.parts) for (let i = 0; i < p.pos.length; i += 3) { x0 = Math.min(x0, p.pos[i]); x1 = Math.max(x1, p.pos[i]); y0 = Math.min(y0, p.pos[i + 1]); y1 = Math.max(y1, p.pos[i + 1]); }
+    Object.assign(m, { x0, x1, y0, y1, width: y1 - y0 });
+    shoeCache[name] = m;
+  }
+  return shoeCache[name];
+}
+// the front view of a shoe, for the drawing: the outline of its sole and heel, and of the rest
+function shoeOutline(name) {
+  const m = shoeModel(name);
+  if (!m.outline) {
+    const base = [], body = [];
+    for (const p of m.parts) {
+      const into = ['sole', 'outsole', 'heel'].includes(p.mat) ? base : p.mat === 'lining' ? null : body;
+      if (into) for (let i = 0; i < p.pos.length; i += 3) into.push([p.pos[i + 1], p.pos[i + 2]]);
+    }
+    m.outline = { base: hull(base), body: hull(body) };
+  }
+  return m.outline;
+}
+/* Shoes on the two end sections, toes to the front: casual ones on the bottom shelf space, dress ones on the bottom of
+   the hanging section above it (or on the floor, if the section hangs from the floor). mode: two letters, left end and
+   right end, M (men's) or W (women's). As many pairs across as fit; a style too tall for the space is skipped. */
+function shoes(M, mode) {
+  if (!mode || !/^[MW]{2}$/.test(mode)) return [];
+  const out = [], last = M.secs.length - 1, ends = last > 0 ? [[0, mode[0]], [last, mode[1]]] : [[0, mode[0]]];
+  for (const [i, g] of ends) {
+    const s = M.secs[i], zs = s.zones;
+    if (!zs.length || zs[0].type === 'drawers') continue;
+    const rows = [{ z: zs[0], kind: zs[0].type === 'hang' ? 'dress' : 'casual' }];
+    if (zs[0].type !== 'hang') { const h = zs.find((z, k) => k > 0 && z.type === 'hang'); if (h) rows.push({ z: h, kind: 'dress' }); }
+    for (const r of rows) {
+      const room = (r.z.type === 'shelves' && r.z.n ? r.z.gap : r.z.h) - 6;
+      const cands = SHOE_SETS[g][r.kind].filter(k => shoeModel(k).height <= room);
+      if (!cands.length) continue;
+      const pick = (p) => cands[p % cands.length], pairW = (k) => 2 * shoeModel(k).width + 3;
+      let n = 0;
+      while (n < 6 && Array.from({ length: n + 1 }, (_, p) => pairW(pick(p))).reduce((a, b) => a + b, 0) + (n + 2) * 6 <= s.cw) n++;
+      if (!n) continue;
+      const used = Array.from({ length: n }, (_, p) => pairW(pick(p))).reduce((a, b) => a + b, 0), gap = (s.cw - used) / (n + 1);
+      let x = s.cx0 + gap;
+      for (let p = 0; p < n; p++) {
+        const k = pick(p), m = shoeModel(k), heel = M.yc1 - 8 - m.x1;
+        // the right shoe on the left, the left one (mirrored) on the right, inner sides facing
+        const xr = x - m.y0, xl = xr + m.y1 + 3 + m.y1;
+        out.push({ sec: i, zone: r.z.k, kind: r.kind, gender: g, style: k, xc: xr, mirror: false, y0: heel, z0: r.z.z0 });
+        out.push({ sec: i, zone: r.z.k, kind: r.kind, gender: g, style: k, xc: xl, mirror: true, y0: heel, z0: r.z.z0 });
+        x += pairW(k) + gap;
+      }
+    }
+  }
   return out;
 }
-const api = { slideDoors, shoes, SHOE_STYLES, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
+const api = { slideDoors, shoes, shoeModel, shoeOutline, SHOE_LOOKS, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.RobeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1091,7 +1326,7 @@ class Viewer {
     this.sph = { th: -0.5, ph: 1.28, r: 9000 };
     this.mats = {}; this.edgeMat = new THREE.LineBasicMaterial({ color: 0x2a2826, transparent: true, opacity: 0.45 });
     this.selMat = new THREE.LineBasicMaterial({ color: 0xa8620a });
-    this.opts = { doors: false, fascia: true, swing: true, openAll: false, angle: 90, sel: -1 };
+    this.opts = { doors: false, fascia: true, swing: true, shoes: 'off', angle: 90, sel: -1 };
     this.drawerT = new Map(); this.drawerC = new Map(); this.obsOpen = 1;
     this.ray = new THREE.Raycaster();
     this.renderer.setClearColor(0xe4e2dc, 1);
@@ -1101,7 +1336,7 @@ class Viewer {
     const loop = () => {
       let moving = false;
       for (const [id, g] of this.drawers || []) {
-        const t = (this.opts.openAll || this.drawerT.get(id)) ? g.userData.dist : 0, c = this.drawerC.get(id) || 0;
+        const t = this.drawerT.get(id) ? g.userData.dist : 0, c = this.drawerC.get(id) || 0;
         const nc = Math.abs(t - c) < 0.5 ? t : c + (t - c) * 0.2;
         if (nc !== c) { this.drawerC.set(id, nc); g.position.z = nc; moving = true; }
       }
@@ -1116,7 +1351,7 @@ class Viewer {
     return this.mats[k];
   }
   clear() {
-    this.root.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+    this.root.traverse(o => { if (o.geometry && !o.userData.keepGeo) o.geometry.dispose(); });
     this.root.clear();
   }
   setModel(M, keep) {
@@ -1199,7 +1434,17 @@ class Viewer {
     for (const g of this.doorGroups) if (g) { const i = g.children[0].userData.door; g.position.x = g.userData.X(this.doorPos[i] + g.userData.w / 2); }
     this.dirty = true;
   }
-  set(o) { Object.assign(this.opts, o); this.apply(); }
+  set(o) {
+    const was = this.opts.shoes;
+    Object.assign(this.opts, o);
+    if (this.M && o.shoes !== undefined && o.shoes !== was) {
+      if (this.shoeGroup) { this.root.remove(this.shoeGroup); this.shoeGroup = null; }
+      this.buildShoes(this.M, (x) => x - this.M.P.W / 2);
+    }
+    this.apply();
+  }
+  // open or close every drawer; each one can then be opened and closed on its own
+  setAllDrawers(open) { for (const id of this.drawers ? this.drawers.keys() : []) this.drawerT.set(id, open); this.dirty = true; }
   apply() {
     if (!this.M) return;
     const o = this.opts;
@@ -1211,38 +1456,52 @@ class Viewer {
       this.obs.pv.rotation.x = (o.angle * Math.PI / 180);
       this.obs.env.visible = !!o.swing;
     }
-    if (this.shoeGroup) this.shoeGroup.visible = !!o.shoes;
     this.dirty = true;
   }
-  shoeMat(hex) {
-    const k = 'shoe' + hex;
-    if (!this.mats[k]) this.mats[k] = new THREE.MeshStandardMaterial({ color: srgb(hex), roughness: 0.62, metalness: 0.02 });
+  shoeMat(style, part) {
+    const k = 'shoe-' + style + '-' + part;
+    if (!this.mats[k]) {
+      const lk = root.RobeCore.SHOE_LOOKS[style], f = lk[part] || lk.upper;
+      const m = new THREE.MeshPhysicalMaterial({ color: srgb(f[0]), roughness: f[1], metalness: 0, clearcoat: f[2] || 0, clearcoatRoughness: 0.25 });
+      if (part === 'lining') m.side = THREE.DoubleSide;
+      this.mats[k] = m;
+    }
     return this.mats[k];
   }
-  buildShoes(M, X) {
-    const g = new THREE.Group(), lib = root.RobeCore;
-    // profiles are drawn heel to toe along -x, so a quarter turn about the vertical (a rotation, not a mirror, so the
-    // faces keep their outward normals) points the toes into the room and extrudes them across the width
-    const toWorld = (x0, y0, z0) => new THREE.Matrix4().set(0, 0, 1, x0, 0, 1, 0, z0, -1, 0, 0, y0, 0, 0, 0, 1);
-    const shapeOf = (pts) => new THREE.Shape(pts.map(([a, b]) => new THREE.Vector2(-a, b)));
-    for (const sh of lib.shoes(M)) {
-      const st = lib.SHOE_STYLES[sh.style], bev = 5;
-      const shape = shapeOf(st.prof);
-      const up = new THREE.ExtrudeGeometry(shape, { depth: Math.max(4, sh.w - 2 * bev), bevelEnabled: true, bevelThickness: bev, bevelSize: 3, bevelSegments: 3, curveSegments: 6 });
-      up.applyMatrix4(toWorld(X(sh.x0) + bev, sh.y0, sh.z0 + (st.sole ? 2 : 0)));
-      g.add(new THREE.Mesh(up, this.shoeMat(sh.upper)));
-      if (st.sole) {
-        const sole = shapeOf([[-2, 0], [st.len + 2, 0], [st.len + 3, st.sole * 0.6], [st.len - 4, st.sole], [-2, st.sole]]);
-        const sg = new THREE.ExtrudeGeometry(sole, { depth: sh.w - 2, bevelEnabled: true, bevelThickness: 1.5, bevelSize: 1.5, bevelSegments: 1 });
-        sg.applyMatrix4(toWorld(X(sh.x0) + 1, sh.y0, sh.z0));
-        g.add(new THREE.Mesh(sg, this.shoeMat(sh.sole)));
-      } else {
-        const heel = new THREE.Mesh(new THREE.BoxGeometry(sh.w * 0.32, 60, 20), this.shoeMat(sh.sole));
-        heel.position.set(X(sh.x0 + sh.w / 2), sh.z0 + 30, sh.y0 + 15); g.add(heel);
-      }
+  // one set of geometries per style, shared by every shoe of that style; shoe frame (x heel to toe, y left, z up)
+  // turned into the room's (X across, Y up, Z toward the room)
+  shoeGeoms(style) {
+    this.shoeGeo = this.shoeGeo || {};
+    if (!this.shoeGeo[style]) {
+      const m = root.RobeCore.shoeModel(style);
+      this.shoeGeo[style] = m.parts.map(p => {
+        const a = new Float32Array(p.pos.length);
+        for (let i = 0; i < p.pos.length; i += 3) { a[i] = p.pos[i + 1]; a[i + 1] = p.pos[i + 2]; a[i + 2] = p.pos[i]; }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(a, 3)); geo.setIndex(p.idx); geo.computeVertexNormals();
+        return { geo, mat: p.mat };
+      });
     }
-    g.userData.noFit = true;
-    g.traverse(o => { o.userData.noFit = true; });
+    return this.shoeGeo[style];
+  }
+  buildShoes(M, X) {
+    const g = new THREE.Group();
+    for (const q of root.RobeCore.shoes(M, this.opts.shoes)) {
+      const sg = new THREE.Group();
+      for (const { geo, mat } of this.shoeGeoms(q.style)) {
+        if (mat === 'upper') {
+          sg.add(new THREE.Mesh(geo, this.shoeMat(q.style, 'upper')));
+          // the inside of the upper shows the lining
+          const k = 'shoe-' + q.style + '-inner';
+          if (!this.mats[k]) { this.mats[k] = this.shoeMat(q.style, 'lining').clone(); this.mats[k].side = THREE.BackSide; }
+          sg.add(new THREE.Mesh(geo, this.mats[k]));
+        } else sg.add(new THREE.Mesh(geo, this.shoeMat(q.style, mat)));
+      }
+      sg.position.set(X(q.xc), q.z0, q.y0);
+      if (q.mirror) sg.scale.x = -1;
+      g.add(sg);
+    }
+    g.traverse(o => { o.userData.noFit = true; o.userData.keepGeo = true; });
     this.shoeGroup = g; this.root.add(g);
   }
   toggleDrawer(id) { this.drawerT.set(id, !this.drawerT.get(id)); this.dirty = true; }
@@ -1419,7 +1678,8 @@ if (!visibleKeys().includes(book.active)) book.active = visibleKeys()[0];
 let state = C.normalize(book.slots[book.active] || presetOf(book.active));
 let model = null, viewer = null, timer = null, sel = 0;
 const openSecs = new Set([0]);
-const view = { doors: false, fascia: true, swing: true, openAll: false, shoes: true, angle: 90 };
+const LS_SHOES = 'master-robe-builder.shoes';
+const view = { doors: false, fascia: true, swing: true, shoes: (() => { const v = readLS(LS_SHOES); return ['MW', 'WM', 'MM', 'WW', 'off'].includes(v) ? v : 'MW'; })(), angle: 90 };
 const LS_DOORS = 'master-robe-builder.doors';
 const doorPos = [];
 let doorKey = '';
@@ -1713,7 +1973,7 @@ function rebuild(keepView) {
   $('tab-obs').textContent = lab; $('obs-title').textContent = lab; $('obs-angle-l').textContent = `${lab} door`; $('leg-obs-t').textContent = `${lab.toLowerCase()} door swing`;
   for (const id of ['obs-card', 'chip-swing', 'swing-bar', 'leg-obs', 'side-row']) $(id).hidden = !on;
   $('leg-clash').hidden = !(on && model.obsRes.list.some(r => r.level !== 'ok'));
-  $('leg-shoes').hidden = !view.shoes;
+  $('leg-shoes').hidden = view.shoes === 'off';
   document.querySelector('.results').classList.toggle('one', !on);
   $('obs-angle').max = model.P.box.maxAngle;
   if (view.angle > model.P.box.maxAngle) { view.angle = model.P.box.maxAngle; $('obs-angle').value = view.angle; $('obs-out').textContent = view.angle + '°'; }
@@ -1780,7 +2040,7 @@ function svgDims() {
 }
 const HATCH = `<defs><pattern id="hatch" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="var(--bg)"/><line x1="0" y1="0" x2="0" y2="40" stroke="var(--wall)" stroke-width="5"/></pattern></defs>`;
 function renderElev() {
-  $('leg-shoes').hidden = !view.shoes;
+  $('leg-shoes').hidden = view.shoes === 'off';
   const M = model, P = M.P, H = P.H, Wd = P.W, d = svgDims(), S = d.S, R = (p, cls, extra) => S.push(`<rect class="${cls}" x="${p.x0}" y="${H - p.z1}" width="${Math.max(1, p.x1 - p.x0)}" height="${Math.max(1, p.z1 - p.z0)}"${extra || ''}/>`);
   S.push(HATCH);
   // walls, floor, ceiling
@@ -1801,12 +2061,14 @@ function renderElev() {
   // parts that hit the obstruction or its door swing, or come closer than wanted
   if (M.obsRes) for (const r of M.obsRes.list) if (r.level !== 'ok' && order.includes(r.p.kind)) S.push(`<rect class="${r.level === 'bad' ? 'p-clash' : 'p-tight'}" x="${r.p.x0 - 8}" y="${H - r.p.z1 - 8}" width="${Math.max(1, r.p.x1 - r.p.x0) + 16}" height="${Math.max(1, r.p.z1 - r.p.z0) + 16}" rx="6"><title>${esc(r.p.name)}: ${f1(r.d)} mm</title></rect>`);
   // shoes, seen from the front: the toe of each one
-  const shoeList = view.shoes ? C.shoes(M) : [], shoeZones = new Set(shoeList.map(q => `${q.sec}-${q.zone}`));
+  const shoeList = C.shoes(M, view.shoes), shoeZones = new Set(shoeList.map(q => `${q.sec}-${q.zone}`));
   const hexc = (n) => '#' + n.toString(16).padStart(6, '0');
+  const SHOE_NAMES = { oxford: "men's oxford", derby: "men's derby", sneakerM: "men's sneaker", loafer: "men's loafer", pump: 'pump', slingback: 'slingback', sneakerW: "women's sneaker", flat: 'ballet flat' };
   for (const q of shoeList) {
-    const x = q.x0, w = q.w, zb = H - q.z0, h = Math.min(q.h, q.style === 'boot' ? q.h : q.h * 0.62), r = Math.min(w / 2, h);
-    S.push(`<path class="shoe" d="M ${x} ${zb} v ${-(h - r)} a ${w / 2} ${r} 0 0 1 ${w} 0 v ${h - r} z" style="fill:${hexc(q.upper)}"><title>${q.style}</title></path>`);
-    S.push(`<rect class="shoe" x="${x - 1}" y="${zb - 10}" width="${w + 2}" height="10" style="fill:${hexc(q.sole)}"/>`);
+    const o = C.shoeOutline(q.style), lk = C.SHOE_LOOKS[q.style];
+    const pts = (h) => h.map(([y, z]) => `${(q.xc + (q.mirror ? -y : y)).toFixed(1)},${(H - q.z0 - z).toFixed(1)}`).join(' ');
+    S.push(`<polygon class="shoe" points="${pts(o.body)}" style="fill:${hexc(lk.upper[0])}"><title>${SHOE_NAMES[q.style] || q.style}</title></polygon>`);
+    S.push(`<polygon class="shoe" points="${pts(o.base)}" style="fill:${hexc((lk.sole || lk.upper)[0])}"/>`);
   }
   // zone labels
   M.secs.forEach(s => s.zones.forEach(z => {
@@ -2102,8 +2364,10 @@ function bind() {
     document.querySelectorAll('.tools [data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     if (viewer) viewer.view(b.dataset.view);
   }));
-  const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.swing = $('v-swing').checked; view.openAll = $('v-open').checked; view.shoes = $('v-shoes').checked; if (viewer) viewer.set(view); renderElev(); };
-  ['v-doors', 'v-fascia', 'v-swing', 'v-open', 'v-shoes'].forEach(id => $(id).addEventListener('change', chips));
+  const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.swing = $('v-swing').checked; view.shoes = $('v-shoes').value; writeLS(LS_SHOES, view.shoes); if (viewer) viewer.set(view); renderElev(); };
+  ['v-doors', 'v-fascia', 'v-swing', 'v-shoes'].forEach(id => $(id).addEventListener('change', chips));
+  $('v-shoes').value = view.shoes;
+  $('v-open').addEventListener('change', (e) => { if (viewer) viewer.setAllDrawers(e.target.checked); });
   $('obs-angle').addEventListener('input', (e) => { view.angle = Number(e.target.value); $('obs-out').textContent = view.angle + '°'; if (viewer) viewer.set(view); renderSide(); });
   $('config').addEventListener('change', (e) => switchTo(e.target.value));
   $('cfg-add').addEventListener('click', addConfig);
@@ -2160,7 +2424,7 @@ function start() {
   if (keptAtStart.length) status(`Some configurations were updated. Your edits are kept as ${keptAtStart.join(', ')}.`);
   rebuild(false);
   if (viewer) viewer.view('iso');
-  window.__robe = { get model() { return model; }, get state() { return state; } };
+  window.__robe = { get model() { return model; }, get state() { return state; }, get viewer() { return viewer; } };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
