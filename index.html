@@ -1637,11 +1637,12 @@ function fillComputed() {
 }
 
 /* ---------------------------------------------------------------- rebuild */
-function save() {
+// put the configuration on screen back in the book, noting which version of a built-in it started from
+function stash() {
   book.slots[book.active] = state;
   if (builtin(book.active) && !book.bases[book.active]) book.bases[book.active] = C.normalize(presetOf(book.active));
-  writeLS(LS_BOOK, book);
 }
+function save() { stash(); writeLS(LS_BOOK, book); }
 function updateDesignSeg() {
   const sel = $('config'), groups = new Map();
   for (const q of C.PRESET_LIST) if (!book.hidden.includes(q.key)) { if (!groups.has(q.group)) groups.set(q.group, []); groups.get(q.group).push(q); }
@@ -1670,7 +1671,7 @@ async function addConfig() {
   while (taken(name)) name = `${base} ${i++}`;
   const v = await ask({ title: 'Add a configuration', text: `It starts as a copy of ${nameOf(book.active)}, with your edits.`, input: name, ok: 'Add', check: true });
   if (v === null) return;
-  commitFocus(); book.slots[book.active] = state;
+  commitFocus(); stash();
   const key = 'u' + Date.now().toString(36);
   book.custom.push({ key, name: v, base: C.clone(state) });
   // the new configuration gets its own copy, so edits from here on leave the one it came from alone
@@ -1695,7 +1696,7 @@ function commitFocus() { const a = document.activeElement; if (a && $('rail').co
 function switchTo(k) {
   if (k === book.active) return;
   commitFocus();
-  book.slots[book.active] = state; book.active = k;
+  stash(); book.active = k;
   state = C.normalize(book.slots[k] || presetOf(k)); save(); renderEditor(); rebuild(true); updateDesignSeg();
   const nb = model.checks.filter(c => c.level === 'bad').length, nt = model.obsRes ? model.obsRes.list.filter(r => r.level === 'warn').length : 0;
   status(`${nameOf(k)}${nb ? `: ${nb} clash${nb > 1 ? 'es' : ''}, in red` : ', no clashes'}${nt ? `; ${nt} part${nt > 1 ? 's' : ''} closer than you want to the ${model.P.box.label.toLowerCase()}, in amber` : ''}.`);
@@ -1928,7 +1929,7 @@ async function keyFrom(pw, salt, iter) {
 }
 // what gets locked: AAGL - A and AAGL - B as they stand on this page now
 function currentDesigns() {
-  book.slots[book.active] = state;
+  stash();
   const designs = {};
   for (const q of C.PRESET_LIST) designs[q.key] = book.slots[q.key] || presetOf(q.key);
   for (const q of book.custom) designs[q.key] = book.slots[q.key] || q.base;
@@ -1956,7 +1957,7 @@ async function findLock() {
       // the locked design on the site has changed since this browser unlocked it: drop the old copy
       if (book.unlocked && book.lockId !== j.ct.slice(0, 40)) {
         // the built-in configurations go back to their public versions until you unlock again; edited copies are kept
-        book.slots[book.active] = state; book.unlocked = null; book.lockId = null;
+        stash(); book.unlocked = null; book.lockId = null;
         const kept = reconcile();
         if (!visibleKeys().includes(book.active)) book.active = visibleKeys()[0];
         state = C.normalize(book.slots[book.active] || presetOf(book.active));
@@ -1976,7 +1977,7 @@ function bindLock() {
       const d = await decryptDesign(lockData, pw), u = {};
       for (const q of C.PRESET_LIST) if (d.designs[q.key]) u[q.key] = C.normalize(d.designs[q.key]);
       // the built-in configurations take their unlocked versions; added ones in the lock join yours
-      book.slots[book.active] = state;
+      stash();
       for (const q of d.custom || []) if (d.designs[q.key] && !customOf(q.key)) book.custom.push({ key: q.key, name: q.name, base: C.normalize(d.designs[q.key]) });
       book.unlocked = u; book.lockId = lockData.ct.slice(0, 40);
       const kept = reconcile();
