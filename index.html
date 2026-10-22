@@ -1375,15 +1375,46 @@ const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } 
 
 // configurations: the built-in ones (AAGL - A to D, the company's revisions), replaced by their unlocked versions once
 // the locked design is opened, and any you add, each keeping its own edits in this browser
-const LS_BOOK = 'master-robe-builder.book.v1', BOOK_V = 6;
-const freshBook = () => ({ v: BOOK_V, active: 'A', slots: {}, custom: [], hidden: [], unlocked: null, lockId: null });
+const LS_BOOK = 'master-robe-builder.book.v1', BOOK_V = 7;
+const freshBook = () => ({ v: BOOK_V, active: 'A', slots: {}, bases: {}, custom: [], hidden: [], unlocked: null, lockId: null });
 let book = readLS(LS_BOOK);
-if (!book || !book.slots || book.v !== BOOK_V) book = freshBook();
+if (!book || !book.slots) book = freshBook();
+else if (book.v !== BOOK_V) {
+  // older books kept edited copies of the built-in configurations with no record of what they started from, so a
+  // corrected built-in could stay hidden behind an old copy; start the built-ins afresh and keep what you added
+  const old = book; book = freshBook();
+  for (const k of ['custom', 'hidden', 'unlocked', 'lockId', 'active']) if (old[k] !== undefined) book[k] = old[k];
+  book.custom = Array.isArray(book.custom) ? book.custom : []; book.hidden = Array.isArray(book.hidden) ? book.hidden : [];
+  for (const q of book.custom) if (old.slots[q.key]) book.slots[q.key] = old.slots[q.key];
+}
 const builtin = (k) => C.PRESET_LIST.find(q => q.key === k);
 const customOf = (k) => book.custom.find(q => q.key === k);
 const nameOf = (k) => (builtin(k) || customOf(k) || { name: k }).name;
 const visibleKeys = () => C.PRESET_LIST.map(q => q.key).filter(k => !book.hidden.includes(k)).concat(book.custom.map(q => q.key));
 const presetOf = (k) => customOf(k) ? C.clone(customOf(k).base) : C.clone((book.unlocked && book.unlocked[k]) || C.PRESETS[k]);
+// Each built-in configuration you have opened keeps the version it started from. When that version changes (an update
+// to this page, or unlocking), an untouched copy simply takes the new version; one with your edits is kept as an added
+// configuration, "<name> (earlier version)", and the built-in shows the new version.
+const sameDesign = (a, b) => JSON.stringify(C.normalize(a)) === JSON.stringify(C.normalize(b));
+function reconcile() {
+  const kept = [];
+  for (const q of C.PRESET_LIST) {
+    const k = q.key, slot = book.slots[k], base = book.bases[k];
+    if (!slot) { delete book.bases[k]; continue; }
+    const cur = presetOf(k);
+    if (base && sameDesign(base, cur)) continue;
+    if (base ? !sameDesign(slot, base) : !sameDesign(slot, cur)) {
+      let name = `${q.name} (earlier version)`, i = 2;
+      while (visibleKeys().some(x => nameOf(x) === name)) name = `${q.name} (earlier version ${i++})`;
+      const key = 'u' + Date.now().toString(36) + k;
+      book.custom.push({ key, name, base: C.clone(base || slot) }); book.slots[key] = slot; kept.push(name);
+      if (book.active === k) book.active = key;
+    }
+    delete book.slots[k]; delete book.bases[k];
+  }
+  return kept;
+}
+const keptAtStart = reconcile();
 if (!visibleKeys().includes(book.active)) book.active = visibleKeys()[0];
 let state = C.normalize(book.slots[book.active] || presetOf(book.active));
 let model = null, viewer = null, timer = null, sel = 0;
@@ -1598,7 +1629,7 @@ function fillComputed() {
       zr.textContent = t;
     });
   });
-  M.partitions.forEach(pt => { const el = $('rb-' + pt.j); if (el) el.textContent = `${pt.j === 0 ? 'left end' : pt.j === M.partitions.length - 1 ? 'right end' : `S${pt.j} | S${pt.j + 1}`} · ${pt.double ? `2 x ${M.P.T}` : M.P.T} · ${pt.leaves.map(L => f1(L.h)).join(' / ')} tall · ${f1(pt.x0)} from the left wall`; });
+  M.partitions.forEach(pt => { const el = $('rb-' + pt.j); if (el) el.textContent = `${pt.j === 0 ? 'left end' : pt.j === M.partitions.length - 1 ? 'right end' : `S${pt.j} | S${pt.j + 1}`} · ${pt.double ? `2 x ${M.P.T}` : M.P.T} · ${pt.leaves.map(L => L.h >= M.P.H - 0.01 ? 'ceiling' : f1(L.h)).join(' / ')} tall · ${f1(pt.x0)} from the left wall`; });
   const wh = $('width-hint');
   if (wh) wh.innerHTML = `Carcass <b>${f1(M.xR - M.xL)}</b> wide: ${M.partitions.length} partitions (${M.partitions.filter(q => q.double).length} doubled) taking <b>${f1(M.tw.reduce((a, b) => a + b, 0))}</b>, and sections summing <b>${f1(M.widths.reduce((a, b) => a + b, 0))}</b>${M.autos ? `; auto sections get <b>${f1(M.autoW)}</b>` : ''}${!M.autos && Math.abs(M.leftover) > 0.05 ? `; <b style="color:var(--bad)">${f1(M.leftover)} unaccounted</b>` : ''}. "Plan" is the width as the company dimensions it, to partition centres.${M.balance && M.balance.ok ? ` The balancing section gets <b>${f1(M.widths[M.P.sections.findIndex(q => q.wMode === 'balance')])}</b> to keep the middle centred.` : ''}${M.obsFit.filter(q => q.ok).map(q => ` S${q.k + 1} fits the ${esc(M.P.box.label.toLowerCase())}: <b>${f1(q.w)}</b> clear, its partition ${f1(M.P.box.gapP)} past it.`).join('')}`;
   const sp = $('obs-pos');
@@ -1606,7 +1637,11 @@ function fillComputed() {
 }
 
 /* ---------------------------------------------------------------- rebuild */
-function save() { book.slots[book.active] = state; writeLS(LS_BOOK, book); }
+function save() {
+  book.slots[book.active] = state;
+  if (builtin(book.active) && !book.bases[book.active]) book.bases[book.active] = C.normalize(presetOf(book.active));
+  writeLS(LS_BOOK, book);
+}
 function updateDesignSeg() {
   const sel = $('config'), groups = new Map();
   for (const q of C.PRESET_LIST) if (!book.hidden.includes(q.key)) { if (!groups.has(q.group)) groups.set(q.group, []); groups.get(q.group).push(q); }
@@ -1649,6 +1684,7 @@ async function removeConfig() {
   if (v === null) return;
   const i = visibleKeys().indexOf(k);
   delete book.slots[k];
+  delete book.bases[k];
   if (isB) book.hidden.push(k); else book.custom = book.custom.filter(q => q.key !== k);
   const ks = visibleKeys(); book.active = ks[Math.min(i, ks.length - 1)];
   state = C.normalize(book.slots[book.active] || presetOf(book.active)); save(); renderEditor(); rebuild(true); updateDesignSeg();
@@ -1919,12 +1955,13 @@ async function findLock() {
       lockData = j; $('unlock-row').hidden = false; $('lock-none').hidden = true; $('hdr-unlock').hidden = false;
       // the locked design on the site has changed since this browser unlocked it: drop the old copy
       if (book.unlocked && book.lockId !== j.ct.slice(0, 40)) {
-        // keep what you added; the built-in configurations go back to their public versions until you unlock again
-        for (const q of C.PRESET_LIST) delete book.slots[q.key];
-        book.unlocked = null; book.lockId = null;
-        if (!customOf(book.active)) state = C.normalize(presetOf(book.active));
+        // the built-in configurations go back to their public versions until you unlock again; edited copies are kept
+        book.slots[book.active] = state; book.unlocked = null; book.lockId = null;
+        const kept = reconcile();
+        if (!visibleKeys().includes(book.active)) book.active = visibleKeys()[0];
+        state = C.normalize(book.slots[book.active] || presetOf(book.active));
         save(); renderEditor(); rebuild(false); updateDesignSeg();
-        lockStatus('The locked design has been updated since you last unlocked it. Unlock it again to load the new version.');
+        lockStatus(`The locked design has been updated since you last unlocked it. Unlock it again to load the new version.${kept.length ? ` Your edits are kept as ${kept.join(', ')}.` : ''}`);
       }
     }
   } catch (e) { /* no lock file here */ }
@@ -1940,12 +1977,13 @@ function bindLock() {
       for (const q of C.PRESET_LIST) if (d.designs[q.key]) u[q.key] = C.normalize(d.designs[q.key]);
       // the built-in configurations take their unlocked versions; added ones in the lock join yours
       book.slots[book.active] = state;
-      for (const q of C.PRESET_LIST) delete book.slots[q.key];
       for (const q of d.custom || []) if (d.designs[q.key] && !customOf(q.key)) book.custom.push({ key: q.key, name: q.name, base: C.normalize(d.designs[q.key]) });
       book.unlocked = u; book.lockId = lockData.ct.slice(0, 40);
-      if (!customOf(book.active)) state = C.normalize(presetOf(book.active));
+      const kept = reconcile();
+      if (!visibleKeys().includes(book.active)) book.active = visibleKeys()[0];
+      state = C.normalize(book.slots[book.active] || presetOf(book.active));
       $('pw-open').value = ''; save(); renderEditor(); rebuild(false); updateDesignSeg();
-      lockStatus(`Unlocked: ${Object.keys(u).map(nameOf).join(', ')}.`);
+      lockStatus(`Unlocked: ${Object.keys(u).map(nameOf).join(', ')}.${kept.length ? ` Edits you had made to the public versions are kept as ${kept.join(', ')}.` : ''}`);
     }
     catch (e) { lockStatus('That password doesn\'t open the locked design.'); }
   };
@@ -2092,7 +2130,7 @@ function bind() {
     status('If nothing downloaded, use Copy settings instead: this view may block downloads.');
   });
   $('load-json').addEventListener('click', () => { try { state = C.normalize(JSON.parse($('io').value)); save(); renderEditor(); rebuild(false); status('Settings loaded.'); } catch (e) { status('That text is not a settings file from this page.'); } });
-  $('reset').addEventListener('click', () => { state = C.normalize(presetOf(book.active)); save(); renderEditor(); rebuild(false); status(`${nameOf(book.active)} is back to how it started.`); });
+  $('reset').addEventListener('click', () => { state = C.normalize(presetOf(book.active)); delete book.bases[book.active]; save(); renderEditor(); rebuild(false); status(`${nameOf(book.active)} is back to how it started.`); });
   document.querySelectorAll('[data-theme-set]').forEach(b => b.addEventListener('click', () => { applyTheme(b.dataset.themeSet); writeLS(LS_THEME, b.dataset.themeSet); }));
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   if (mq.addEventListener) mq.addEventListener('change', () => applyTheme(readLS(LS_THEME) || 'auto'));
@@ -2118,6 +2156,7 @@ function start() {
   model = C.layout(state);
   renderEditor();
   bind(); bindLock(); findLock(); updateDesignSeg();
+  if (keptAtStart.length) status(`Some configurations were updated. Your edits are kept as ${keptAtStart.join(', ')}.`);
   rebuild(false);
   if (viewer) viewer.view('iso');
   window.__robe = { get model() { return model; }, get state() { return state; } };
