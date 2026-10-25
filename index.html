@@ -263,6 +263,12 @@ svg .c-worst.lv-warn { stroke: var(--warn); } svg .c-worst.lv-bad { stroke: var(
 svg .c-worst { fill: none !important; stroke: var(--cont); stroke-width: 3; stroke-dasharray: 10 7; }
 svg .c-lab { font-family: var(--mono); font-size: 30px; fill: var(--ink); }
 svg .c-lab.lv-warn { fill: var(--warn); } svg .c-lab.lv-bad { fill: var(--bad); }
+.paintgrid { display: grid; gap: 6px 4px; align-items: center; }
+.paintgrid .ph { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
+svg .lab, svg .labk, svg .dimt, svg .c-lab { paint-order: stroke; stroke: var(--bg); stroke-width: 7px; stroke-linejoin: round; }
+.paintgrid .pl { font-size: 12.5px; color: var(--muted); line-height: 1.15; }
+input[type=color].paint { width: 100%; min-width: 0; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); cursor: pointer; }
+input[type=color].paint.one { width: 64px; }
 .cont { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; align-items: start; }
 .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 18px; margin: 10px 0 12px; }
 .cplay { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -332,12 +338,14 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
         <button type="button" role="tab" data-tab="cavity" aria-selected="false">Cavity</button>
         <button type="button" role="tab" data-tab="obs" aria-selected="false" id="tab-obs">Obstruction</button>
         <button type="button" role="tab" data-tab="doors" aria-selected="false">Doors</button>
+        <button type="button" role="tab" data-tab="walls" aria-selected="false">Walls</button>
         <button type="button" role="tab" data-tab="build" aria-selected="false">Materials</button>
       </div>
       <div class="pane" data-pane="sections" id="pane-sections"></div>
       <div class="pane" data-pane="cavity" id="pane-cavity" hidden></div>
       <div class="pane" data-pane="obs" id="pane-obs" hidden></div>
       <div class="pane" data-pane="doors" id="pane-doors" hidden></div>
+      <div class="pane" data-pane="walls" id="pane-walls" hidden></div>
       <div class="pane" data-pane="build" id="pane-build" hidden></div>
     </aside>
 
@@ -353,6 +361,7 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
           <div class="chips" role="group" aria-label="Show">
             <label><input type="checkbox" id="v-doors"> Sliding doors</label>
             <label><input type="checkbox" id="v-fascia" checked> Fascia</label>
+            <label><input type="checkbox" id="v-walls" checked> Walls</label>
             <label id="chip-swing"><input type="checkbox" id="v-swing" checked> Door swing</label>
             <label><input type="checkbox" id="v-open"> Drawers open</label>
             <label class="shoe-pick"><span class="sr">Shoes</span><select id="v-shoes" aria-label="Shoes in the end sections">
@@ -541,10 +550,13 @@ function normalize(p) {
     return d;
   });
   const sizeIds = P.drawerSizes.map(d => d.id);
+  // wall paint: the side walls one colour, the back wall a colour per section below its top and another above it
+  P.walls = Object.assign({ side: PAINT }, P.walls && typeof P.walls === 'object' ? P.walls : {}); P.walls.side = hexOr(P.walls.side, PAINT);
   if (!Array.isArray(P.sections) || !P.sections.length) P.sections = clone(MINE.sections);
   P.sections = P.sections.slice(0, 14).map(s => {
     s = Object.assign({ w: null, top: null, kick: true, zones: [] }, s);
     nnum(s, 'w', 50, 4000); nnum(s, 'top', 200, 3600); s.kick = s.kick !== false;
+    const pt = s.paint && typeof s.paint === 'object' ? s.paint : {}; s.paint = { below: hexOr(pt.below, PAINT), above: hexOr(pt.above, PAINT) };
     if (!['fixed', 'auto', 'link', 'obs', 'balance'].includes(s.wMode)) s.wMode = s.w === null ? 'auto' : 'fixed';
     if (s.wMode === 'fixed' && s.w === null) s.wMode = 'auto';
     s.link = s.link === null || s.link === undefined || !isFinite(Number(s.link)) ? null : Math.round(Number(s.link));
@@ -655,6 +667,8 @@ function obsGeom(P) {
 }
 
 /* ------------------------------------------------------------------ layout */
+const PAINT = '#e7e2d8';
+const hexOr = (v, d) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : d;
 function parseList(s) { return String(s || '').split(/[\s,;]+/).map(Number).filter(v => isFinite(v) && v > 0); }
 
 function layout(raw) {
@@ -895,7 +909,11 @@ function layout(raw) {
   if (hasTrack) front.track = put({ kind: 'toptrack', name: 'Top track', x0: rx0, x1: rx0 + railL, y0: tb, y1: yFace, z0: zTrack, z1: zHead, hw: true, front: true });
   if (F.fascia && fasciaH > 0) front.fascia = put({ kind: 'fascia', name: 'Fascia', x0: hx0, x1: hx1, y0: D - F.fasciaT, y1: D, z0: P.H - fasciaH, z1: P.H, hw: true, front: true });
 
-  const model = { P, D, yc0, yc1, yIn, xL, xR, px, tw, bnd, postFace, gapsBefore, obsFit, balance, partitions, widths, tops, ribs, secs, parts, computed, leftover, autoW, autos, front, doorH,
+  // the back wall behind each section, below and above its top, split at the middle of each partition
+  const cutsX = [0, ...partitions.slice(1, -1).map(pt => (pt.x0 + pt.x1) / 2), P.W];
+  const wallAreas = secs.flatMap((s, i) => [['below', 0, s.top], ['above', s.top, P.H]].filter(q => q[2] - q[1] > 0.5)
+    .map(([k, z0, z1]) => ({ sec: i, k, x0: cutsX[i], x1: cutsX[i + 1], z0, z1, color: P.sections[i].paint[k] })));
+  const model = { P, D, yc0, yc1, yIn, xL, xR, px, tw, bnd, wallAreas, postFace, gapsBefore, obsFit, balance, partitions, widths, tops, ribs, secs, parts, computed, leftover, autoW, autos, front, doorH,
     counts: { drawers: drawerCount, rail: railTotal, adj: adjCount, bySize } };
   // obstruction
   if (P.box.show) {
@@ -1517,7 +1535,7 @@ function containerMaxH(M, S, spot) {
   while (hi - lo > 0.5) { const m = (lo + hi) / 2; if (ok(m)) lo = m; else hi = m; }
   return Math.floor(lo);
 }
-const api = { containerHeadroom, containerMaxH, CONT_DEFAULT, normCont, containerRuns, containerSpots, containerPose, containerObstacles, containerSweep, slideDoors, shoes, shoeModel, shoeMeta, SHOE_META, SHOE_FALLBACK, SHOE_NAMES, SHOE_LOOKS, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
+const api = { PAINT, containerHeadroom, containerMaxH, CONT_DEFAULT, normCont, containerRuns, containerSpots, containerPose, containerObstacles, containerSweep, slideDoors, shoes, shoeModel, shoeMeta, SHOE_META, SHOE_FALLBACK, SHOE_NAMES, SHOE_LOOKS, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.RobeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1556,7 +1574,7 @@ class Viewer {
     this.sph = { th: -0.5, ph: 1.28, r: 9000 };
     this.mats = {}; this.edgeMat = new THREE.LineBasicMaterial({ color: 0x2a2826, transparent: true, opacity: 0.45 });
     this.selMat = new THREE.LineBasicMaterial({ color: 0xa8620a });
-    this.opts = { doors: false, fascia: true, swing: true, shoes: 'off', angle: 90, sel: -1 };
+    this.opts = { doors: false, fascia: true, swing: true, walls: true, shoes: 'off', angle: 90, sel: -1 };
     this.drawerT = new Map(); this.drawerC = new Map(); this.obsOpen = 1;
     this.ray = new THREE.Raycaster();
     this.renderer.setClearColor(0xe4e2dc, 1);
@@ -1575,6 +1593,11 @@ class Viewer {
       root.requestAnimationFrame(loop);
     };
     loop();
+  }
+  paint(hex) {
+    const k = 'paint' + hex;
+    if (!this.mats[k]) this.mats[k] = new THREE.MeshStandardMaterial({ color: srgb(parseInt(hex.slice(1), 16)), roughness: 0.95, side: THREE.FrontSide });
+    return this.mats[k];
   }
   mat(k) {
     if (!this.mats[k]) { const s = MAT[k]; this.mats[k] = new THREE.MeshStandardMaterial({ color: srgb(s.color), roughness: s.rough, metalness: s.metal || 0, transparent: s.opacity !== undefined, opacity: s.opacity === undefined ? 1 : s.opacity, depthWrite: s.opacity === undefined, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }); }
@@ -1645,7 +1668,20 @@ class Viewer {
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(P.W, P.H), new THREE.MeshStandardMaterial({ color: srgb(0xd6d1c7), roughness: 1, transparent: true, opacity: 0.5, depthWrite: false }));
     wall.position.set(0, P.H / 2, -0.5);
     room.userData.noFit = fl.userData.noFit = wall.userData.noFit = true;
-    this.root.add(room, fl, wall);
+    this.root.add(room, fl, wall); this.plainWall = wall;
+    // the walls as painted: the back wall in its areas, the side walls the depth of the cavity. They face into the
+    // cavity only, so from outside you see through them
+    const wg = new THREE.Group();
+    for (const a of M.wallAreas) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(a.x1 - a.x0, a.z1 - a.z0), this.paint(a.color));
+      m.position.set(X((a.x0 + a.x1) / 2), (a.z0 + a.z1) / 2, -0.8); wg.add(m);
+    }
+    for (const [x, ry] of [[0, Math.PI / 2], [P.W, -Math.PI / 2]]) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(D, P.H), this.paint(P.walls.side));
+      m.rotation.y = ry; m.position.set(X(x) + (x ? 0.8 : -0.8), P.H / 2, D / 2); wg.add(m);
+    }
+    wg.traverse(o => { o.userData.noFit = true; });
+    this.wallGroup = wg; this.root.add(wg);
     this.apply();
     if (!keep) this.fit();
     this.dirty = true;
@@ -1694,6 +1730,7 @@ class Viewer {
       if (r.p.kind === 'sdoor') r.obj.visible = !!o.doors;
       if (r.p.kind === 'fascia') r.obj.visible = !!o.fascia;
     }
+    if (this.wallGroup) { this.wallGroup.visible = !!o.walls; this.plainWall.visible = !o.walls; }
     if (this.obs) {
       this.obs.pv.rotation.x = (o.angle * Math.PI / 180);
       this.obs.env.visible = !!o.swing;
@@ -1984,7 +2021,8 @@ let state = C.normalize(book.slots[book.active] || presetOf(book.active));
 let model = null, viewer = null, timer = null, sel = 0;
 const openSecs = new Set([0]);
 const LS_SHOES = 'master-robe-builder.shoes';
-const view = { doors: false, fascia: true, swing: true, shoes: (() => { const v = readLS(LS_SHOES); return ['MW', 'WM', 'MM', 'WW', 'off'].includes(v) ? v : 'MW'; })(), angle: 90 };
+const LS_WALLS = 'master-robe-builder.walls';
+const view = { doors: false, fascia: true, swing: true, walls: readLS(LS_WALLS) !== false, shoes: (() => { const v = readLS(LS_SHOES); return ['MW', 'WM', 'MM', 'WW', 'off'].includes(v) ? v : 'MW'; })(), angle: 90 };
 const LS_DOORS = 'master-robe-builder.doors';
 // storage containers: the same in every configuration, kept on this device
 const LS_CONT = 'master-robe-builder.containers';
@@ -2170,6 +2208,7 @@ function renderEditor() {
   $('pane-obs').innerHTML = F.obs.map(fieldHTML).join('') + `<div class="hint" id="obs-pos"></div>`;
   $('pane-doors').innerHTML = F.doors.map(fieldHTML).join('') + (state.front.doors ? `<h3>Finishes</h3><div class="row-btns">${state.front.finishes.map((fn, d) => `<label class="lbl" style="display:flex;gap:6px;align-items:center">Door ${d + 1}<select id="fd-${d}" data-k="front.finishes.${d}" data-t="str"><option value="oak"${fn === 'oak' ? ' selected' : ''}>Boston oak</option><option value="mirror"${fn === 'mirror' ? ' selected' : ''}>Mirror</option></select></label>`).join('')}</div>` : '') + `<div class="row-btns"><button type="button" class="btn small" data-act="doorsclose">Close all doors</button><button type="button" class="btn small" data-act="doorspark">Park them left and right</button></div>
     <div class="hint">Turn on the Sliding doors chip over the 3D view, then drag a door sideways. A door pushing the next one on its track moves half as fast and takes it along; the rail ends stop them both. With the oak doors outside, the two mirrors run behind them and butt in the middle.</div>`;
+  $('pane-walls').innerHTML = wallsHTML();
   $('pane-build').innerHTML = F.build.map(fieldHTML).join('') + `<h3>Drawer sizes</h3>
     <div class="hint">Stock drawers by box height. Drawer stacks set to "by drawer size" are built from these, so the same sizes line up across sections. A blank front is the box plus the allowance above.</div>
     <div class="dsizes">${state.drawerSizes.map((d, n) => `<div class="dsize">
@@ -2180,6 +2219,25 @@ function renderEditor() {
     <div class="row-btns"><button type="button" class="btn small" data-act="sizeadd">Add a drawer size</button></div>`;
   rail.scrollTop = sc;
   fillComputed();
+}
+function wallsHTML() {
+  const S = state.sections, n = S.length, lab = (k) => k === 'above' ? 'above the top shelf' : 'below the top shelf';
+  const cell = (i, k) => `<input type="color" class="paint" id="pw-${i}-${k}" data-k="sections.${i}.paint.${k}" data-t="color" value="${S[i].paint[k]}" aria-label="S${i + 1}, back wall ${lab(k)}" title="S${i + 1}, back wall ${lab(k)}">`;
+  const same = (k) => S.every(sc => sc.paint[k] === S[0].paint[k]);
+  return `<h3>Walls</h3>
+    <div class="hint">How the room's walls are painted, in the 3D view and the elevation. The Walls chip over the 3D view shows or hides them. Each configuration keeps its own colours.</div>
+    <div class="field"><div><label for="f-walls-side">Side walls</label><small>Both of them, front to back.</small></div><input type="color" class="paint one" id="f-walls-side" data-k="walls.side" data-t="color" value="${state.walls.side}"></div>
+    <h3>Back wall</h3>
+    <div class="hint">Behind each section, above and below its top shelf, split at the middle of each partition.</div>
+    <div class="paintgrid" style="grid-template-columns: 58px repeat(${n}, minmax(0, 1fr))">
+      <span></span>${S.map((_, i) => `<span class="ph">S${i + 1}</span>`).join('')}
+      <span class="pl">Above top shelf</span>${S.map((_, i) => cell(i, 'above')).join('')}
+      <span class="pl">Below top shelf</span>${S.map((_, i) => cell(i, 'below')).join('')}
+    </div>
+    <div class="field"><div><label for="pa-above">Every section, above</label></div><input type="color" class="paint one" id="pa-above" data-paint="above" value="${same('above') ? S[0].paint.above : C.PAINT}"></div>
+    <div class="field"><div><label for="pa-below">Every section, below</label></div><input type="color" class="paint one" id="pa-below" data-paint="below" value="${same('below') ? S[0].paint.below : C.PAINT}"></div>
+    <div class="field"><div><label for="pa-all">The whole back wall</label></div><input type="color" class="paint one" id="pa-all" data-paint="all" value="${same('above') && same('below') && S[0].paint.above === S[0].paint.below ? S[0].paint.above : C.PAINT}"></div>
+    <div class="row-btns"><button type="button" class="btn small" data-act="paintside">Back wall the same as the sides</button></div>`;
 }
 function fillComputed() {
   if (!model) return;
@@ -2392,6 +2450,8 @@ function renderElev() {
   S.push(HATCH);
   // walls, floor, ceiling
   S.push(`<rect class="wall" x="-80" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="${Wd}" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="0" y="-80" width="${Wd}" height="80"/><rect class="wall" x="-80" y="${H}" width="${Wd + 160}" height="60"/>`);
+  // the back wall as painted
+  if (view.walls) for (const a of M.wallAreas) S.push(`<rect x="${a.x0}" y="${H - a.z1}" width="${a.x1 - a.x0}" height="${a.z1 - a.z0}" fill="${a.color}"/>`);
   // section hit areas
   M.secs.forEach(s => S.push(`<rect class="secbg${s.i === sel ? ' sel' : ''}" data-sec="${s.i}" x="${s.cx0}" y="${H - s.top}" width="${s.cw}" height="${s.top}"><title>S${s.i + 1}: click to edit</title></rect>`));
   const order = ['back', 'kick', 'panel', 'top', 'base', 'shelf', 'adj', 'rail', 'front', 'handle', 'head', 'toptrack', 'clad', 'stud'];
@@ -2772,9 +2832,10 @@ function act(b) {
   else if (a === 'equal') S.forEach(s => { s.wMode = 'auto'; });
   else if (a === 'kickall') S.forEach(s => { s.kick = true; });
   else if (a === 'kicknone') S.forEach(s => { s.kick = false; });
-  else if (a === 'mirror') { const n = S.length; for (let q = 0; q < Math.floor(n / 2); q++) { const top = S[n - 1 - q].top; S[n - 1 - q] = Object.assign(C.clone(S[q]), { wMode: 'link', link: q, top: S[q].top === null ? null : top }); } }
+  else if (a === 'mirror') { const n = S.length; for (let q = 0; q < Math.floor(n / 2); q++) { const top = S[n - 1 - q].top; S[n - 1 - q] = Object.assign(C.clone(S[q]), { wMode: 'link', link: q, top: S[q].top === null ? null : top, paint: S[n - 1 - q].paint }); } }
   else if (a === 'dadd') { S[i].zones[k].list.push(b.dataset.id); }
   else if (a === 'ddel') { const l = S[i].zones[k].list; if (l.length > 1) l.splice(Number(b.dataset.f), 1); }
+  else if (a === 'paintside') { S.forEach(sc => { sc.paint.above = state.walls.side; sc.paint.below = state.walls.side; }); }
   else if (a === 'sizeadd') { state.drawerSizes.push({ id: 's' + Date.now().toString(36), name: 'New size', box: 150, front: null }); }
   else if (a === 'sizedel') { const n = Number(b.dataset.n); if (state.drawerSizes.length > 1) state.drawerSizes.splice(n, 1); }
   else if (a === 'zadd') { const t = b.dataset.type, z = t === 'drawers' ? { type: t, h: null, mode: 'sized', list: [state.drawerSizes[0].id, state.drawerSizes[0].id, state.drawerSizes[0].id], n: 3, hs: '' } : t === 'shelves' ? { type: t, h: 400, n: 1 } : t === 'hang' ? { type: t, h: 900, drop: null } : { type: t, h: 300 }; S[i].zones.push(z); openSecs.add(i); }
@@ -2813,7 +2874,13 @@ function applyTheme(t) {
 function bind() {
   const rail = $('rail');
   const onEdit = (e, commit) => {
-    const el = e.target; if (!el.dataset || !el.dataset.k || !el.isConnected) return;
+    const el = e.target;
+    if (el.dataset && el.dataset.paint && el.isConnected) {
+      const rows = el.dataset.paint === 'all' ? ['above', 'below'] : [el.dataset.paint];
+      state.sections.forEach((sc, i) => rows.forEach(k => { sc.paint[k] = el.value; const c = $(`pw-${i}-${k}`); if (c) c.value = el.value; }));
+      schedule(); return;
+    }
+    if (!el.dataset || !el.dataset.k || !el.isConnected) return;
     const t = el.dataset.t; let v;
     if (t === 'wmode') {
       const i = Number(el.dataset.k.split('.')[1]), sc = state.sections[i], val = el.value;
@@ -2822,7 +2889,7 @@ function bind() {
       structural(); return;
     }
     if (t === 'bool') v = el.checked;
-    else if (t === 'str') v = el.value;
+    else if (t === 'str' || t === 'color') v = el.value;
     else if (t === 'nnum') v = el.value === '' ? null : Number(el.value);
     else { if (el.value === '' || !isFinite(Number(el.value))) return; v = Number(el.value); }
     setPath(state, el.dataset.k, v);
@@ -2841,8 +2908,9 @@ function bind() {
     document.querySelectorAll('.tools [data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     if (viewer) viewer.view(b.dataset.view);
   }));
-  const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.swing = $('v-swing').checked; view.shoes = $('v-shoes').value; writeLS(LS_SHOES, view.shoes); if (viewer) viewer.set(view); renderElev(); };
-  ['v-doors', 'v-fascia', 'v-swing', 'v-shoes'].forEach(id => $(id).addEventListener('change', chips));
+  $('v-walls').checked = view.walls;
+  const chips = () => { view.doors = $('v-doors').checked; view.fascia = $('v-fascia').checked; view.walls = $('v-walls').checked; writeLS(LS_WALLS, view.walls); view.swing = $('v-swing').checked; view.shoes = $('v-shoes').value; writeLS(LS_SHOES, view.shoes); if (viewer) viewer.set(view); renderElev(); };
+  ['v-doors', 'v-fascia', 'v-walls', 'v-swing', 'v-shoes'].forEach(id => $(id).addEventListener('change', chips));
   $('v-shoes').value = view.shoes;
   $('v-open').addEventListener('change', (e) => { if (viewer) viewer.setAllDrawers(e.target.checked); });
   $('obs-angle').addEventListener('input', (e) => { view.angle = Number(e.target.value); $('obs-out').textContent = view.angle + '°'; if (viewer) viewer.set(view); renderSide(); });
