@@ -11,13 +11,15 @@ Use the GitHub Pages site, or serve the folder (the shoe models load from `shoes
 - **Contents:** each section is a stack of zones: drawers, hanging, adjustable shelves or open space, with a fixed shelf between zones. Drawer stacks are built from stock drawer sizes (by box height), so rows line up across sections.
 - **Partitions:** end panels and partitions, each single or doubled, every leaf with its own height (auto, a number, or up to the ceiling).
 - **Obstruction:** something in the cavity to keep clear of, with its position, size and an optional bottom-hinged door whose swept space is checked against every part. Off by default.
+- **Wall posts:** timber posts standing proud of the side walls near the front, with how far each one stands out, where it sits front to back and the cladding round it. Fitted to them, the end panels line up with the cladding, which sets the side gaps, and the door rail runs between the clad posts.
+- **Storage containers:** containers of any width, length and height on the tops, spread along them. Take one out (play or scrub, in the 3D view or the side view) and the page checks every step of the way against the fascia, the door track behind it, the ceiling and anything else in line, and gives the tallest container that clears. They are the same in every configuration.
 - **Sliding doors:** count, finishes, which finish runs on the outer track, rail length, overlap, fascia. Drag a door in the 3D view to slide it; pushing a door into the next one on its track moves both at half speed.
 - **Shoes:** two pairs a row in the end sections (dress shoes on the bottom of the hanging space, casual ones in the cubby below), men's or women's on each side, staggered front and back where the section is too narrow for them side by side. The eight shoe models in `shoes/` were made for this project; if they can't load (a page opened on its own), simpler built-in shapes stand in.
 - **Materials:** board thicknesses (16 mm by default), drawer allowances, sheet size, kerf and trim.
 
 ## Configurations
 
-The **Configuration** menu at the top switches between the built-in designs (AAGL - A to D and the company's rev.01, rev.02 and rev.04) and any you add. The circled **+** adds a configuration as a copy of the one you are looking at, under a name you choose; the circled **−** removes the one you are looking at (removed built-in ones can be brought back from Files and settings). Each configuration keeps its own edits in your browser.
+The **Configuration** menu at the top switches between the built-in designs (AAGL - A to E and the company's rev.01, rev.02 and rev.04) and any you add. The circled **+** adds a configuration as a copy of the one you are looking at, under a name you choose; the circled **−** removes the one you are looking at (removed built-in ones can be brought back from Files and settings). Each configuration keeps its own edits in your browser.
 
 ## Keeping and sharing a design
 

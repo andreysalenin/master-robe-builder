@@ -17,7 +17,7 @@
   --good: #2c7146; --warn: #9a5700; --bad: #b0281f;
   --warn-soft: #f6e7cf; --bad-soft: #f5dcd8; --info-soft: #e7e5df; --good-soft: #dcebdf;
   --board: #f4f2ec; --board-edge: #2a2b2d; --front: #ffffff; --hang: #2f5fb3; --shelf: #3d8a4f; --oak: #8b6a47;
-  --obs: #b0281f; --obs-soft: #f2d3cf; --dim: #3c4a5c; --wall: #b9b3a8;
+  --obs: #b0281f; --obs-soft: #f2d3cf; --dim: #3c4a5c; --wall: #b9b3a8; --cont: #1f7a82;
   --display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
   --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -29,7 +29,7 @@
     --accent: #eea83d; --accent-soft: #3a2c15; --on-accent: #1a1206; --viewer: #222325;
     --good: #6cc48d; --warn: #f0b154; --bad: #ff8a7e; --warn-soft: #3a2c15; --bad-soft: #3d1e1b; --info-soft: #262624; --good-soft: #1b2e22;
     --board: #2a2b2c; --board-edge: #c9c6bf; --front: #34353a; --hang: #7da4ef; --shelf: #6cc48d; --oak: #b48a5e;
-    --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844;
+    --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844; --cont: #5cc3c9;
     --scrim: rgba(0, 0, 0, .6);
     color-scheme: dark;
   }
@@ -39,7 +39,7 @@
   --accent: #eea83d; --accent-soft: #3a2c15; --on-accent: #1a1206; --viewer: #222325;
   --good: #6cc48d; --warn: #f0b154; --bad: #ff8a7e; --warn-soft: #3a2c15; --bad-soft: #3d1e1b; --info-soft: #262624; --good-soft: #1b2e22;
   --board: #2a2b2c; --board-edge: #c9c6bf; --front: #34353a; --hang: #7da4ef; --shelf: #6cc48d; --oak: #b48a5e;
-  --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844; --scrim: rgba(0, 0, 0, .6);
+  --obs: #ff8a7e; --obs-soft: #3d1e1b; --dim: #a9bad0; --wall: #4a4844; --cont: #5cc3c9; --scrim: rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
@@ -237,6 +237,8 @@ svg .shoe { stroke: var(--board-edge); stroke-width: 2; }
 svg .p-clash { fill: color-mix(in srgb, var(--bad) 40%, transparent); stroke: var(--bad); stroke-width: 6; }
 svg .p-tight { fill: color-mix(in srgb, var(--warn) 35%, transparent); stroke: var(--warn); stroke-width: 5; }
 svg .p-swing { fill: color-mix(in srgb, var(--obs) 14%, transparent); stroke: var(--obs); stroke-width: 3; stroke-dasharray: 12 8; }
+svg .p-clad { fill: var(--board); stroke: var(--board-edge); stroke-width: 2.5; }
+svg .p-stud { fill: none; stroke: var(--oak); stroke-width: 3; stroke-dasharray: 16 10; }
 svg .p-fascia { fill: color-mix(in srgb, var(--oak) 70%, transparent); stroke: var(--oak); stroke-width: 2; }
 svg .p-sdoor { fill: none; stroke: var(--oak); stroke-width: 3; stroke-dasharray: 30 14; }
 svg .p-ghost { fill: color-mix(in srgb, var(--board-edge) 7%, transparent); stroke: var(--muted); stroke-width: 2; stroke-dasharray: 10 8; }
@@ -250,6 +252,27 @@ svg .lab { fill: var(--muted); font-family: var(--body); font-size: 44px; }
 svg .labk { fill: var(--ink); font-family: var(--display); font-weight: 600; font-size: 58px; letter-spacing: 1px; }
 svg .labs { fill: var(--obs); font-family: var(--display); font-weight: 600; font-size: 48px; }
 svg .ceil { stroke: var(--wall); stroke-width: 3; }
+svg .p-cont { fill: color-mix(in srgb, var(--cont) 22%, transparent); stroke: var(--cont); stroke-width: 3; }
+svg .p-track { fill: color-mix(in srgb, var(--ink) 8%, transparent); stroke: var(--muted); stroke-width: 2; stroke-dasharray: 8 6; }
+svg .c-ghost { fill: none; stroke: var(--cont); stroke-width: 1.5; opacity: .32; }
+svg .c-now { fill: color-mix(in srgb, var(--cont) 30%, transparent); stroke: var(--cont); stroke-width: 3; }
+svg .c-now.lv-warn { fill: color-mix(in srgb, var(--warn) 30%, transparent); stroke: var(--warn); }
+svg .c-now.lv-bad { fill: color-mix(in srgb, var(--bad) 30%, transparent); stroke: var(--bad); }
+svg .c-worst.lv-warn { stroke: var(--warn); } svg .c-worst.lv-bad { stroke: var(--bad); }
+svg .c-worst { fill: none !important; stroke: var(--cont); stroke-width: 3; stroke-dasharray: 10 7; }
+svg .c-lab { font-family: var(--mono); font-size: 30px; fill: var(--ink); }
+svg .c-lab.lv-warn { fill: var(--warn); } svg .c-lab.lv-bad { fill: var(--bad); }
+.cont { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; align-items: start; }
+.cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 18px; margin: 10px 0 12px; }
+.cplay { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.cplay input[type=range] { flex: 1 1 140px; accent-color: var(--cont); min-width: 100px; }
+.cplay output { font-family: var(--mono); font-size: 13px; min-width: 40px; text-align: right; }
+.lv-bad { color: var(--bad); } .lv-warn { color: var(--warn); } .lv-good { color: var(--good); }
+.contbar { pointer-events: auto; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 5px 8px; flex: 1 1 300px; max-width: 460px; }
+.contbar label { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.contbar input[type=range] { flex: 1; accent-color: var(--cont); min-width: 80px; }
+.contbar output { font-family: var(--mono); font-size: 13px; min-width: 40px; text-align: right; }
+.contbar .btn, .cplay .btn { white-space: nowrap; }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 .legend i { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin-right: 5px; border-top: 3px solid; }
 
@@ -264,7 +287,7 @@ svg .ceil { stroke: var(--wall); stroke-width: 3; }
 details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent); margin-top: 10px; }
 
 @media (max-width: 960px) {
-  .side-row { grid-template-columns: minmax(0, 1fr); }
+  .side-row, .cont { grid-template-columns: minmax(0, 1fr); }
   .work { grid-template-columns: minmax(0, 1fr); }
   .rail { max-height: none; order: 2; position: static; overflow: visible; }
   .stage { display: contents; }
@@ -342,6 +365,11 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
             <input type="range" id="obs-angle" min="0" max="90" step="1" value="90" aria-label="Door opening angle">
             <output id="obs-out">90°</output>
           </div>
+          <div class="contbar" id="cont-bar">
+            <button type="button" class="btn small" id="cont-play3">Take one out</button>
+            <input type="range" id="cont-t3" min="0" max="1000" step="1" value="0" aria-label="How far the container is out">
+            <output id="cont-out3">in</output>
+          </div>
           <div class="front-tag" id="front-tag">Drag to orbit, right-drag to pan, scroll to zoom. Click a drawer to open it; drag a sliding door to slide it.</div>
         </div>
       </div>
@@ -359,6 +387,28 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
         </div>
       </div>
 
+      <div class="card" id="cont-card">
+        <h2>Storage containers <small id="cont-note"></small></h2>
+        <div class="cont">
+          <div>
+            <div class="hint" id="cont-hint"></div>
+            <div class="cgrid" id="cont-fields"></div>
+            <div class="row-btns"><label class="check"><input type="checkbox" id="cont-show"> <span>Show them</span></label><button type="button" class="btn small" id="cont-turn" title="Swap the width and the length">Turn them 90°</button><button type="button" class="btn small" id="cont-reset">Back to the defaults</button></div>
+            <div class="figs" id="cont-figs" style="margin-top:14px"></div>
+          </div>
+          <div>
+            <div class="drawwrap side" id="cont-side"></div>
+            <div class="cplay">
+              <button type="button" class="btn small" id="cont-play">Take one out</button>
+              <input type="range" id="cont-t" min="0" max="1000" step="1" value="0" aria-label="How far the container is out">
+              <output id="cont-out">in</output>
+              <select id="cont-pick" aria-label="Which container"></select>
+            </div>
+            <div class="cap" id="cont-cap"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Elevation <small>from the room; click a section to edit it</small></h2>
         <div class="drawings">
@@ -370,6 +420,7 @@ details.more > summary { cursor: pointer; font-size: 13.5px; color: var(--accent
               <span><i style="border-color:var(--hang)"></i>hanging rail</span>
               <span id="leg-obs"><i style="border-color:var(--obs);border-top-style:dashed"></i><span id="leg-obs-t">door swing</span></span>
               <span><i style="border-color:var(--oak)"></i>fascia / sliding doors</span>
+              <span id="leg-cont"><i style="border-color:var(--cont);border-top-width:6px"></i>storage containers</span>
               <span id="leg-shoes"><i style="border-color:var(--oak);border-top-width:6px;border-radius:3px"></i>shoes</span>
               <span id="leg-clash"><i style="border-color:var(--bad);border-top-width:6px"></i>clash</span>
             </div>
@@ -457,11 +508,11 @@ const same = (k, top, zones, kick) => Object.assign(sec(null, top, zones, kick),
 const dbl = (on, extra) => Array.from({ length: 8 }, (_, j) => Object.assign({ double: on.includes(j) }, (extra && extra[j]) || {}));
 const D4 = ['main', 'main', 'main', 'main'];
 // the built-in configurations
-const PRESETS = {"A":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"B":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"C":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":386,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":540,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":386,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"D":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":410,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":568,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":540,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":410,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"rev01":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1429,"drop":30},{"type":"shelves","h":null,"n":2}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"shelves","h":363.4,"n":2},{"type":"drawers","h":null,"mode":"sized","list":["main","main","main"],"n":3,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1429,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"rev02":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":362,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1520,"drop":30},{"type":"shelves","h":null,"n":1}]},{"w":548,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1664,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}},"rev04":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":418,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1520,"drop":30},{"type":"shelves","h":null,"n":1}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":568,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":418,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1664,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10}}};
+const PRESETS = {"A":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"B":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"C":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":386,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":540,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":386,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"D":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":410,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":568,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":540,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":410,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"E":{"W":3792,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":9,"sideGapR":11,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":398,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":134,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":null,"n":0}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":568,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":540,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1000,"drop":null},{"type":"hang","h":null,"drop":null}]},{"w":null,"wMode":"auto","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":null,"n":0},{"type":"hang","h":1482,"drop":null},{"type":"shelves","h":468,"n":1}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":40,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":true,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"rev01":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":383,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1429,"drop":30},{"type":"shelves","h":null,"n":2}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"shelves","h":363.4,"n":2},{"type":"drawers","h":null,"mode":"sized","list":["main","main","main"],"n":3,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1429,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"rev02":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":362,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1520,"drop":30},{"type":"shelves","h":null,"n":1}]},{"w":548,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":584,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":527,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":399,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1664,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}},"rev04":{"W":3798,"H":2555,"wallDepth":510,"extraDepth":90,"depth":447,"sideGapL":1,"sideGapR":1,"backGap":0,"mainTop":2148,"T":16,"Tdf":16,"Tdb":16,"Tdbb":16,"Tback":16,"Tkick":16,"backs":false,"topMode":"continuous","kickH":96,"kickSet":20,"adjSet":20,"adjGap":1,"railDrop":50,"dGap":2.4,"runnerLen":400,"runnerSide":13,"boxLess":35,"frontSet":0,"handleProud":30,"frontExtra":35,"drawerSizes":[{"id":"main","name":"Main","box":185,"front":217},{"id":"jewel","name":"Jewellery","box":121,"front":157.6}],"sections":[{"w":418,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1520,"drop":30},{"type":"shelves","h":null,"n":1}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":568,"wMode":"fixed","link":null,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main"],"n":4,"hs":""},{"type":"hang","h":null,"drop":30}]},{"w":null,"wMode":"link","link":2,"top":null,"kick":true,"zones":[{"type":"drawers","h":null,"mode":"sized","list":["main","main","main","main","jewel"],"n":5,"hs":""},{"type":"shelves","h":null,"n":3}]},{"w":524,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"hang","h":1042,"drop":42},{"type":"hang","h":null,"drop":42}]},{"w":418,"wMode":"fixed","link":null,"top":null,"kick":false,"zones":[{"type":"shelves","h":128,"n":1},{"type":"hang","h":1664,"drop":30},{"type":"shelves","h":null,"n":2}]}],"panels":[{"double":true,"h":null},{"double":true,"h2":null,"h":null},{"double":false,"h":null},{"double":true,"h":null},{"double":true,"h":null},{"double":false,"h":null},{"double":false,"h":null},{"double":true,"h":null}],"box":{"show":false,"label":"Obstruction","xRight":600,"w":300,"z0":1500,"h":300,"d":100,"y0":0,"doorT":14,"doorL":null,"maxAngle":90,"minClear":10,"gapP":20},"front":{"doors":true,"n":4,"zone":90,"rail":null,"outer":"oak","overlap":30,"doorT":30,"fascia":true,"fasciaH":100,"finishes":["oak","mirror","mirror","oak"]},"sheet":{"L":3600,"W":1800,"kerf":4,"trim":10},"posts":{"show":false,"L":25,"R":27,"y0":495,"y1":585,"clad":16,"link":true}}};
 const MINE = PRESETS.A;
 const PRESET_LIST = [
   { key: 'A', name: 'AAGL - A', group: 'AAGL' }, { key: 'B', name: 'AAGL - B', group: 'AAGL' },
-  { key: 'C', name: 'AAGL - C', group: 'AAGL' }, { key: 'D', name: 'AAGL - D', group: 'AAGL' },
+  { key: 'C', name: 'AAGL - C', group: 'AAGL' }, { key: 'D', name: 'AAGL - D', group: 'AAGL' }, { key: 'E', name: 'AAGL - E', group: 'AAGL' },
   { key: 'rev01', name: 'Company rev.01', group: 'Creative by Design' }, { key: 'rev02', name: 'Company rev.02', group: 'Creative by Design' },
   { key: 'rev04', name: 'Company rev.04', group: 'Creative by Design' },
 ];
@@ -521,6 +572,10 @@ function normalize(p) {
   P.panels = P.panels.slice(0, n + 1).map(q => { q = Object.assign({ h: null, h2: null, double: false }, q); nnum(q, 'h', 50, 3600); nnum(q, 'h2', 50, 3600); q.double = !!q.double; return q; });
   const B = P.box;
   B.show = B.show !== false; B.label = String(B.label || 'Obstruction').slice(0, 30);
+  P.posts = Object.assign({ show: false, L: 25, R: 27, y0: 495, y1: 585, clad: 16, link: true }, P.posts || {});
+  const Q = P.posts; Q.show = !!Q.show; Q.link = Q.link !== false;
+  num(Q, 'L', 0, 300, 25); num(Q, 'R', 0, 300, 27); num(Q, 'y0', 0, 1500, 495); num(Q, 'y1', 0, 1500, 585); num(Q, 'clad', 0, 50, 16);
+  if (Q.y1 < Q.y0 + 5) Q.y1 = Q.y0 + 5;
   num(B, 'xRight', 0, 8000, 600); num(B, 'w', 10, 2000, 300); num(B, 'z0', 0, 3600, 1500); num(B, 'h', 10, 2000, 300); num(B, 'd', 5, 1000, 100); num(B, 'y0', 0, 1000, 0);
   num(B, 'doorT', 0, 100, 14); nnum(B, 'doorL', 5, 2000); num(B, 'maxAngle', 0, 180, 90); num(B, 'minClear', 0, 200, 10); num(B, 'gapP', 0, 300, 20);
   const F = P.front;
@@ -604,9 +659,12 @@ function layout(raw) {
   const P = normalize(raw), T = P.T, n = P.sections.length;
   const D = P.wallDepth + P.extraDepth;
   const yc0 = P.backGap, yc1 = P.backGap + P.depth, yIn = yc0 + (P.backs ? P.Tback : 0), dIn = yc1 - yIn;
-  const xL = P.sideGapL, xR = P.W - P.sideGapR;
   // partitions: one board, or two side by side (doubled, where two carcasses meet)
   const tw = P.panels.map(q => q.double ? 2 * T : T);
+  // wall posts: with the carcass fitted to them, each end panel's inside face lines up with the cladding's inside face
+  const PQ = P.posts, postFace = PQ.show ? [PQ.L + PQ.clad, PQ.R + PQ.clad] : null, gapsBefore = [P.sideGapL, P.sideGapR];
+  if (PQ.show && PQ.link) { P.sideGapL = postFace[0] - tw[0]; P.sideGapR = postFace[1] - tw[n]; }
+  const xL = P.sideGapL, xR = P.W - P.sideGapR;
   const avail = xR - xL - tw.reduce((a, b) => a + b, 0);
   // section widths: fixed, auto (share what is left), the same as another section, ending just past the obstruction,
   // or balancing: sized so the middle of the run (the middle section, or the middle partition) sits on the centre line
@@ -647,7 +705,7 @@ function layout(raw) {
   const { obsFit, autos, autoW, widths, px } = sol;
   const leftover = avail - widths.reduce((a, b) => a + b, 0);
   const tops = P.sections.map(s => s.top === null ? P.mainTop : s.top);
-  const parts = [], computed = {}, notes = [];
+  const parts = [], computed = { sideGapL: P.sideGapL, sideGapR: P.sideGapR }, notes = [];
   let pid = 0;
   const put = (o) => { o.id = 'p' + (pid++); parts.push(o); return o; };
   const cont = P.topMode === 'continuous';
@@ -785,12 +843,27 @@ function layout(raw) {
   bnd.push(px[n], px[n] + tw[n]);
   secs.forEach((s, i) => { s.pitch = bnd[i + 2] - bnd[i + 1]; });
 
+  // wall posts, clad on the face, the front and the back
+  if (PQ.show) {
+    const c = PQ.clad;
+    for (const [side, prot] of [['Left', PQ.L], ['Right', PQ.R]]) {
+      const X = (a, b) => side === 'Left' ? { x0: a, x1: b } : { x0: P.W - b, x1: P.W - a };
+      if (prot > 0) put(Object.assign({ kind: 'stud', name: `${side} wall post`, y0: PQ.y0, y1: PQ.y1, z0: 0, z1: P.H, wall: true, hw: true }, X(0, prot)));
+      if (c > 0) {
+        put(Object.assign({ kind: 'clad', name: `${side} post cladding, face`, cutName: 'Post cladding, face', y0: PQ.y0 - c, y1: PQ.y1 + c, z0: 0, z1: P.H, cut: { L: P.H, W: PQ.y1 - PQ.y0 + 2 * c, T: c }, wall: true, where: side }, X(prot, prot + c)));
+        if (prot > 0) for (const [nm, y0] of [['front', PQ.y1], ['back', PQ.y0 - c]]) put(Object.assign({ kind: 'clad', name: `${side} post cladding, ${nm}`, cutName: 'Post cladding, edge strip', y0, y1: y0 + c, z0: 0, z1: P.H, cut: { L: P.H, W: prot, T: c }, wall: true, where: side }, X(0, prot)));
+      }
+    }
+  }
   // front: sliding doors and fascia
   const F = P.front, front = { doors: [], fascia: null };
   const fasciaH = F.fascia ? F.fasciaH : 0, doorH = P.H - fasciaH;
   // the rail runs centred in the cavity; the doors are equal, closed they cover it with `overlap` where tracks meet.
   // Odd doors (1, 3) run on the back track, even ones on the front track, both inside the front zone.
-  const railL = Math.min(P.W, F.rail === null ? P.W : F.rail), rx0 = (P.W - railL) / 2;
+  // with the posts fitted, the rail runs between the clad posts instead
+  const railSpan = PQ.show && PQ.link ? [postFace[0], P.W - postFace[1]] : null;
+  const railL = railSpan ? railSpan[1] - railSpan[0] : Math.min(P.W, F.rail === null ? P.W : F.rail), rx0 = railSpan ? railSpan[0] : (P.W - railL) / 2;
+  computed['front.rail'] = railL;
   // track 1 is the outer (room side) one: by default the oak doors, with the mirrors behind them. Closed, doors on
   // different tracks overlap; neighbours on the same track butt.
   const tracks = Array.from({ length: F.n }, (_, d) => F.outer === 'alternate' ? d % 2 : (F.finishes[d] === F.outer ? 1 : 0));
@@ -807,9 +880,9 @@ function layout(raw) {
     }
     front.closed = front.doors.map(o => o.x0);
   }
-  if (F.fascia && fasciaH > 0) front.fascia = put({ kind: 'fascia', name: 'Fascia', x0: 0, x1: P.W, y0: D - 18, y1: D, z0: doorH, z1: P.H, hw: true, front: true });
+  if (F.fascia && fasciaH > 0) front.fascia = put({ kind: 'fascia', name: 'Fascia', x0: PQ.show ? postFace[0] : 0, x1: PQ.show ? P.W - postFace[1] : P.W, y0: D - 18, y1: D, z0: doorH, z1: P.H, hw: true, front: true });
 
-  const model = { P, D, yc0, yc1, yIn, xL, xR, px, tw, bnd, obsFit, balance, partitions, widths, tops, ribs, secs, parts, computed, leftover, autoW, autos, front, doorH,
+  const model = { P, D, yc0, yc1, yIn, xL, xR, px, tw, bnd, postFace, gapsBefore, obsFit, balance, partitions, widths, tops, ribs, secs, parts, computed, leftover, autoW, autos, front, doorH,
     counts: { drawers: drawerCount, rail: railTotal, adj: adjCount, bySize } };
   // obstruction
   if (P.box.show) {
@@ -824,7 +897,7 @@ function layout(raw) {
 function obsClearances(M) {
   const g = M.obs, B = M.P.box, box = { x0: g.x0, x1: g.x1, y0: g.y0, y1: g.y1, z0: g.z0, z1: g.z1 }, out = [];
   for (const p of M.parts) {
-    if (p.front) continue;
+    if (p.front || p.wall) continue;
     const dBox = aabbDist(box, p);
     let dDoor = Infinity;
     if (Math.min(p.x1, g.x1) - Math.max(p.x0, g.x0) > 0) dDoor = polyDist(g.env, rectYZ(p));
@@ -845,6 +918,14 @@ function obsClearances(M) {
 function checks(M) {
   const { P, secs, ribs } = M, out = [], T = P.T;
   const w = (level, title, text) => out.push({ level, title, text });
+  if (P.posts.show) {
+    const walls = M.parts.filter(p => p.wall), hit = new Set();
+    for (const p of M.parts) if (!p.wall) for (const q of walls) {
+      const o = Math.min(Math.min(p.x1, q.x1) - Math.max(p.x0, q.x0), Math.min(p.y1, q.y1) - Math.max(p.y0, q.y0), Math.min(p.z1, q.z1) - Math.max(p.z0, q.z0));
+      if (o > 0.3 && !hit.has(p.name + q.name)) { hit.add(p.name + q.name); w('bad', `${p.name} runs into the ${q.name.toLowerCase()}`, `They overlap by ${Math.round(o * 10) / 10} mm.`); }
+    }
+    if (P.posts.link && (P.sideGapL < 0 || P.sideGapR < 0)) w('bad', 'End panel thicker than the post stands out', `To line up with the cladding the carcass would start ${Math.round(-Math.min(P.sideGapL, P.sideGapR))} mm inside the wall.`);
+  }
   const f = (v) => { const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
   if (M.balance && !M.balance.ok) w('warn', 'Balancing section can\'t centre the middle', 'Changing its width doesn\'t move the middle (it is the middle section, or autos on both sides cancel it out). Set it to fixed or auto.');
   for (const f0 of M.obsFit) if (!f0.ok) w('warn', `S${f0.k + 1} can't fit to the ${P.box.label.toLowerCase()}`, `It is set to end just past it, but ${f0.why}; it is sharing the space as auto instead.`);
@@ -909,7 +990,7 @@ function cutList(M) {
     if (!rows.has(key)) rows.set(key, { name: p.cutName, T: p.cut.T, L, W: Wd, qty: 0, where: [] });
     const r = rows.get(key); r.qty++; if (p.where && !r.where.includes(p.where)) r.where.push(p.where);
   }
-  const order = ['End panel', 'Partition', 'Top', 'Base', 'Fixed shelf', 'Adjustable shelf', 'Kicker', 'Back panel', 'Drawer front', 'Drawer side', 'Drawer box front / back', 'Drawer bottom'];
+  const order = ['End panel', 'Partition', 'Top', 'Base', 'Fixed shelf', 'Adjustable shelf', 'Kicker', 'Back panel', 'Drawer front', 'Drawer side', 'Drawer box front / back', 'Drawer bottom', 'Post cladding, face', 'Post cladding, edge strip'];
   const list = [...rows.values()].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name) || b.L - a.L);
   list.forEach((r, i) => { r.mark = String(i + 1); });
   return list;
@@ -1327,7 +1408,99 @@ function shoes(M, mode) {
   }
   return out;
 }
-const api = { slideDoors, shoes, shoeModel, shoeMeta, SHOE_META, SHOE_FALLBACK, SHOE_NAMES, SHOE_LOOKS, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
+/* Storage containers on top of the wardrobe: on the tops at the main height, set `back` off the back wall, spread
+   evenly along each clear run of top (a partition or post standing above the top splits a run).
+   S: { show, n, W (across), L (front to back), H (with its lid), gap, back, tip (the share of its length hanging over
+   the front edge when it tips), margin (clearance wanted) }. Containers are the same in every configuration. */
+const CONT_DEFAULT = { show: true, n: 6, W: 480, L: 390, H: 270, gap: 20, back: 10, tip: 0.5, margin: 10 };
+function normCont(raw) {
+  const S = Object.assign({}, CONT_DEFAULT, raw && typeof raw === 'object' ? raw : {});
+  const n = (k, lo, hi) => { const v = Number(S[k]); S[k] = isFinite(v) ? Math.min(hi, Math.max(lo, v)) : CONT_DEFAULT[k]; };
+  S.show = S.show !== false; n('n', 0, 40); S.n = Math.round(S.n);
+  n('W', 50, 2000); n('L', 50, 1200); n('H', 20, 1200); n('gap', 0, 500); n('back', 0, 600); n('tip', 0.2, 1); n('margin', 0, 200);
+  return S;
+}
+function containerRuns(M) {
+  const top = M.P.mainTop, inDepth = (p) => Math.min(p.y1, M.yc1) - Math.max(p.y0, M.yc0) > 1;
+  const blocks = M.parts.filter(p => !p.front && p.z0 < top + 1 && p.z1 > top + 1 && inDepth(p)).map(p => [p.x0, p.x1]);
+  const runs = [];
+  for (const t of M.parts.filter(p => p.kind === 'top' && Math.abs(p.z1 - top) < 0.5).sort((a, b) => a.x0 - b.x0)) {
+    let segs = [[t.x0, t.x1]];
+    for (const [b0, b1] of blocks) segs = segs.flatMap(([a0, a1]) => b1 <= a0 || b0 >= a1 ? [[a0, a1]] : [[a0, b0], [b1, a1]].filter(q => q[1] - q[0] > 1));
+    for (const [x0, x1] of segs) { const last = runs[runs.length - 1]; if (last && Math.abs(last.x1 - x0) < 0.5) last.x1 = x1; else runs.push({ x0, x1, z: top }); }
+  }
+  return runs;
+}
+function containerSpots(M, S) {
+  if (!S || !S.show || !(S.n > 0)) return { spots: [], placed: 0, wanted: S ? S.n : 0, capacity: 0, runs: [] };
+  const runs = containerRuns(M);
+  // room for k across a run of length r with gaps between and at both ends: k W + (k + 1) gap <= r
+  const cap = runs.map(r => Math.max(0, Math.floor((r.x1 - r.x0 - S.gap) / (S.W + S.gap))));
+  const total = cap.reduce((a, b) => a + b, 0), n = Math.min(S.n, total);
+  const k = cap.map(c => total ? Math.floor(n * c / total) : 0);
+  let rem = n - k.reduce((a, b) => a + b, 0);
+  for (const [, i] of cap.map((c, i) => [total ? n * c / total - k[i] : 0, i]).sort((a, b) => b[0] - a[0])) { if (rem <= 0) break; if (k[i] < cap[i]) { k[i]++; rem--; } }
+  const spots = [];
+  runs.forEach((r, i) => {
+    if (!k[i]) return;
+    const g = (r.x1 - r.x0 - k[i] * S.W) / (k[i] + 1);
+    for (let j = 0; j < k[i]; j++) { const x0 = r.x0 + g + j * (S.W + g); spots.push({ x0, x1: x0 + S.W, y0: M.yc0 + S.back, z0: r.z, run: i }); }
+  });
+  return { spots, placed: spots.length, wanted: S.n, capacity: total, runs };
+}
+/* Taking one out, t from 0 to 1: it slides forward until `tip` of its length hangs over the front edge of the top,
+   then tips forward and down over that edge, sliding across it as it goes, until it hangs straight down in front of
+   the carcass. pt(u, v) gives the room position (depth from the back wall, height) of the point u along its bottom
+   from the back and v up from the bottom. */
+function containerPose(M, S, spot, t) {
+  const L = S.L, py = M.yc1, pz = spot.z0;
+  const dA = Math.max(0, py + S.tip * L - L - spot.y0), tA = dA > 0 ? 0.4 : 0;
+  if (t < tA) { const back = spot.y0 + dA * t / tA; return { theta: 0, back, pt: (u, v) => [back + u, pz + v] }; }
+  const back = spot.y0 + dA, f = tA < 1 ? (t - tA) / (1 - tA) : 1, theta = f * Math.PI / 2, c = Math.max(0, py - back) * (1 - f);
+  const cs = Math.cos(theta), sn = Math.sin(theta);
+  return { theta, c, py, pz, pt: (u, v) => [py + (u - c) * cs + v * sn, pz - (u - c) * sn + v * cs] };
+}
+// what a container passes on its way out, in its own slice of the cavity: the fascia, the door track behind it,
+// any wall post or obstruction in line with it, and the ceiling
+function containerObstacles(M, spot) {
+  const P = M.P, D = M.D, F = P.front, out = [], inX = (a0, a1) => Math.min(a1, spot.x1) - Math.max(a0, spot.x0) > 0;
+  const fa = M.front.fascia;
+  if (fa) out.push({ name: 'fascia', poly: rectYZ(fa), rect: fa });
+  // the doors hang from a track up behind the fascia, across the front zone
+  if (F.doors && F.zone > 0 && M.front.doors.length) { const r = { y0: D - F.zone, y1: fa ? fa.y0 : D, z0: M.doorH, z1: P.H }; if (r.y1 - r.y0 > 0.5 && r.z1 - r.z0 > 0.5) out.push({ name: 'door track', poly: rectYZ(r), rect: r }); }
+  for (const p of M.parts) if (p.wall && inX(p.x0, p.x1)) out.push({ name: p.name.toLowerCase(), poly: rectYZ(p), rect: p });
+  if (M.obs && inX(M.obs.x0, M.obs.x1)) {
+    const lab = P.box.label.toLowerCase();
+    out.push({ name: lab, poly: rectYZ(M.obs), rect: M.obs });
+    out.push({ name: lab + ' door swing', poly: M.obs.env });
+  }
+  return out;
+}
+function containerSweep(M, S, spot, N = 90) {
+  const obstacles = containerObstacles(M, spot), frames = [];
+  let worst = { d: Infinity, name: null, t: 0 }, ceil = { d: Infinity, t: 0 };
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, ps = containerPose(M, S, spot, t), poly = [[0, 0], [S.L, 0], [S.L, S.H], [0, S.H]].map(([u, v]) => ps.pt(u, v));
+    const cd = M.P.H - Math.max(...poly.map(q => q[1]));
+    if (cd < ceil.d) ceil = { d: cd, t };
+    let fd = Infinity, fn = null;
+    for (const o of obstacles) { const d = polyDist(poly, o.poly); if (d < fd) { fd = d; fn = o.name; } if (d < worst.d) worst = { d, name: o.name, t }; }
+    frames.push({ t, poly, d: Math.min(fd, cd), name: cd < fd ? 'ceiling' : fn });
+  }
+  const fa = M.front.fascia, under = (fa ? fa.z0 : M.P.H) - spot.z0;
+  const d = Math.min(worst.d, ceil.d), level = d < 0 ? 'bad' : d < S.margin ? 'warn' : 'ok';
+  return { frames, obstacles, worst, ceiling: ceil, under, d, level, overhang: spot.y0 + S.L - M.yc1 };
+}
+// the tallest container (lid included) that still clears everything by `margin` on its way out, all else the same
+function containerMaxH(M, S, spot) {
+  const ok = (H) => containerSweep(M, Object.assign({}, S, { H }), spot).d >= S.margin;
+  if (!ok(20)) return 0;
+  let lo = 20, hi = 1200;
+  if (ok(hi)) return hi;
+  while (hi - lo > 0.5) { const m = (lo + hi) / 2; if (ok(m)) lo = m; else hi = m; }
+  return Math.floor(lo);
+}
+const api = { containerMaxH, CONT_DEFAULT, normCont, containerRuns, containerSpots, containerPose, containerObstacles, containerSweep, slideDoors, shoes, shoeModel, shoeMeta, SHOE_META, SHOE_FALLBACK, SHOE_NAMES, SHOE_LOOKS, MINE, PRESETS, PRESET_LIST, normalize, layout, cutList, hardware, nest, obsGeom, clone };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.RobeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -1343,9 +1516,9 @@ const MAT = {
   board: { color: 0xeeece6, rough: 0.85 }, front: { color: 0xfbfaf7, rough: 0.7 }, kick: { color: 0xd9d6cf, rough: 0.85 },
   dbox: { color: 0xdedad2, rough: 0.85 }, black: { color: 0x1c1d1f, rough: 0.45, metal: 0.4 }, steel: { color: 0x4c5359, rough: 0.5, metal: 0.4 },
   steel2: { color: 0x626a72, rough: 0.45, metal: 0.4 }, oak: { color: 0x8b6a47, rough: 0.75 }, oakT: { color: 0x8b6a47, rough: 0.75, opacity: 0.55 },
-  mirror: { color: 0xcdd8de, rough: 0.08, metal: 0.35, opacity: 0.9 }, alu: { color: 0x17181a, rough: 0.4, metal: 0.5 }, env: { color: 0xd23b2f, rough: 1, opacity: 0.2 }, clash: { color: 0xd9483b, rough: 0.6 }, tight: { color: 0xe39a33, rough: 0.6 },
+  timber: { color: 0xc9a46c, rough: 0.9 }, plastic: { color: 0xdde6ea, rough: 0.3, opacity: 0.5 }, lid: { color: 0x5f8f99, rough: 0.45 }, mirror: { color: 0xcdd8de, rough: 0.08, metal: 0.35, opacity: 0.9 }, alu: { color: 0x17181a, rough: 0.4, metal: 0.5 }, env: { color: 0xd23b2f, rough: 1, opacity: 0.2 }, clash: { color: 0xd9483b, rough: 0.6 }, tight: { color: 0xe39a33, rough: 0.6 },
 };
-const KIND = { panel: 'board', top: 'board', base: 'board', shelf: 'board', adj: 'board', back: 'board', kick: 'kick', front: 'front', dbox: 'dbox', rail: 'black', handle: 'black', fascia: 'oak' };
+const KIND = { panel: 'board', top: 'board', base: 'board', shelf: 'board', adj: 'board', back: 'board', kick: 'kick', front: 'front', dbox: 'dbox', rail: 'black', handle: 'black', fascia: 'oak', stud: 'timber', clad: 'board' };
 
 class Viewer {
   constructor(el) {
@@ -1568,6 +1741,45 @@ class Viewer {
     g.traverse(o => { o.userData.noFit = true; o.userData.keepGeo = true; });
     this.shoeGroup = g; this.root.add(g);
   }
+  // storage containers on the tops: a see-through tub with a lid, the back of its bottom at the origin, length along +Z
+  setContainers(S, spots, pick) {
+    if (this.contGroup) { this.root.remove(this.contGroup); this.contGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
+    this.contGroup = null; this.cont = { S, spots, pick };
+    if (!this.M || !S || !S.show || !spots.length) { this.dirty = true; return; }
+    const g = new THREE.Group(), X = (x) => x - this.M.P.W / 2;
+    const lidT = Math.min(26, S.H * 0.12), hb = S.H - lidT, tp = Math.min(12, S.W * 0.03, S.L * 0.03);
+    const tub = () => {
+      const geo = new THREE.BoxGeometry(S.W, hb, S.L); geo.translate(0, hb / 2, S.L / 2);
+      const a = geo.attributes.position;
+      // narrower at the bottom, as moulded tubs are
+      for (let i = 0; i < a.count; i++) if (a.getY(i) < hb / 2) { a.setX(i, a.getX(i) * (S.W - 2 * tp) / S.W); a.setZ(i, S.L / 2 + (a.getZ(i) - S.L / 2) * (S.L - 2 * tp) / S.L); }
+      geo.computeVertexNormals(); return geo;
+    };
+    spots.forEach((sp, i) => {
+      const c = new THREE.Group(), bg = tub(), lg = new THREE.BoxGeometry(S.W + 4, lidT, S.L + 4);
+      lg.translate(0, hb + lidT / 2, S.L / 2);
+      const body = new THREE.Mesh(bg, this.mat('plastic')), lid = new THREE.Mesh(lg, this.mat('lid'));
+      c.add(body, lid, new THREE.LineSegments(new THREE.EdgesGeometry(bg), this.edgeMat), new THREE.LineSegments(new THREE.EdgesGeometry(lg), this.edgeMat));
+      c.position.set(X((sp.x0 + sp.x1) / 2), sp.z0, sp.y0);
+      c.userData.lid = lid;
+      g.add(c);
+    });
+    g.traverse(o => { o.userData.noFit = true; });
+    this.contGroup = g; this.root.add(g);
+    this.poseContainer(this.contT || 0, this.contLevel);
+  }
+  poseContainer(t, level) {
+    this.contT = t; this.contLevel = level;
+    if (!this.contGroup || !this.cont) return;
+    const { S, spots, pick } = this.cont, lib = root.RobeCore;
+    this.contGroup.children.forEach((c, i) => {
+      const sp = spots[i], ps = i === pick && t > 0 ? lib.containerPose(this.M, S, sp, t) : null;
+      if (ps) { const q = ps.pt(0, 0); c.position.y = q[1]; c.position.z = q[0]; c.rotation.x = ps.theta; }
+      else { c.position.y = sp.z0; c.position.z = sp.y0; c.rotation.x = 0; }
+      c.userData.lid.material = this.mat(i === pick && level === 'bad' ? 'clash' : i === pick && level === 'warn' ? 'tight' : 'lid');
+    });
+    this.dirty = true;
+  }
   toggleDrawer(id) { this.drawerT.set(id, !this.drawerT.get(id)); this.dirty = true; }
   bounds() {
     const b = new THREE.Box3(); this.root.updateMatrixWorld(true);
@@ -1745,6 +1957,9 @@ const openSecs = new Set([0]);
 const LS_SHOES = 'master-robe-builder.shoes';
 const view = { doors: false, fascia: true, swing: true, shoes: (() => { const v = readLS(LS_SHOES); return ['MW', 'WM', 'MM', 'WW', 'off'].includes(v) ? v : 'MW'; })(), angle: 90 };
 const LS_DOORS = 'master-robe-builder.doors';
+// storage containers: the same in every configuration, kept on this device
+const LS_CONT = 'master-robe-builder.containers';
+let cont = C.normCont(readLS(LS_CONT)), contRes = null, contT = 0, contPick = null, contAnim = 0;
 const doorPos = [];
 let doorKey = '';
 // keep the dragged positions while the rail stays the same; anything else closes the doors
@@ -1771,10 +1986,18 @@ const F = {
     ['h', 'Carcass'],
     ['depth', 'Carcass depth', 'num', 'mm', 'Ribs, tops, bases and shelves. The quote has all internals at 447.', 1],
     ['mainTop', 'Main top height', 'num', 'mm', 'Top surface for every section left on "main". The quote: 2148.', 1],
-    ['sideGapL', 'Gap to the left wall', 'num', 'mm', 'Scribe room. 1.5 each side gives the quote\'s 3795.', 0.5],
+    ['sideGapL', 'Gap to the left wall', 'num', 'mm', 'Scribe room.', 0.5],
     ['sideGapR', 'Gap to the right wall', 'num', 'mm', '', 0.5],
     ['backGap', 'Gap to the back wall', 'num', 'mm', '', 1],
     ['topMode', 'Tops', 'sel', '', 'Continuous runs one top over level sections and the partitions between them; a partition standing taller, or a step in height, splits it.', [['continuous', 'Continuous over partitions'], ['between', 'Between partitions']]],
+    ['h', 'Wall posts'],
+    ['posts.show', 'Posts in the side walls', 'bool', '', 'Timber posts standing proud of the side walls near the front, clad in board on the face, the front and the back.', null, true],
+    ['posts.L', 'Left post stands out', 'num', 'mm', 'From the left wall, before cladding.', 0.5],
+    ['posts.R', 'Right post stands out', 'num', 'mm', 'From the right wall, before cladding.', 0.5],
+    ['posts.y0', 'Post from', 'num', 'mm', 'Its back face, from the back wall.', 1],
+    ['posts.y1', 'Post to', 'num', 'mm', 'Its front face, from the back wall.', 1],
+    ['posts.clad', 'Cladding', 'num', 'mm', 'Board on the face, the front and the back.', 1],
+    ['posts.link', 'Fit the carcass and the rail to the posts', 'bool', '', 'The end panels line up with the cladding\'s inside faces, which sets the gaps to the walls, and the door rail runs between the clad posts.', null, true],
     ['h', 'Kickers'],
     ['kickH', 'Kicker height', 'num', 'mm', 'Each section chooses whether it gets one.', 1],
     ['kickSet', 'Kicker set back', 'num', 'mm', 'From the carcass front edge.', 1],
@@ -1956,6 +2179,15 @@ function fillComputed() {
   M.partitions.forEach(pt => { const el = $('rb-' + pt.j); if (el) el.textContent = `${pt.j === 0 ? 'left end' : pt.j === M.partitions.length - 1 ? 'right end' : `S${pt.j} | S${pt.j + 1}`} · ${pt.double ? `2 x ${M.P.T}` : M.P.T} · ${pt.leaves.map(L => L.h >= M.P.H - 0.01 ? 'ceiling' : f1(L.h)).join(' / ')} tall · ${f1(pt.x0)} from the left wall`; });
   const wh = $('width-hint');
   if (wh) wh.innerHTML = `Carcass <b>${f1(M.xR - M.xL)}</b> wide: ${M.partitions.length} partitions (${M.partitions.filter(q => q.double).length} doubled) taking <b>${f1(M.tw.reduce((a, b) => a + b, 0))}</b>, and sections summing <b>${f1(M.widths.reduce((a, b) => a + b, 0))}</b>${M.autos ? `; auto sections get <b>${f1(M.autoW)}</b>` : ''}${!M.autos && Math.abs(M.leftover) > 0.05 ? `; <b style="color:var(--bad)">${f1(M.leftover)} unaccounted</b>` : ''}. "Plan" is the width as the company dimensions it, to partition centres.${M.balance && M.balance.ok ? ` The balancing section gets <b>${f1(M.widths[M.P.sections.findIndex(q => q.wMode === 'balance')])}</b> to keep the middle centred.` : ''}${M.obsFit.filter(q => q.ok).map(q => ` S${q.k + 1} fits the ${esc(M.P.box.label.toLowerCase())}: <b>${f1(q.w)}</b> clear, its partition ${f1(M.P.box.gapP)} past it.`).join('')}`;
+  const linked = M.P.posts.show && M.P.posts.link;
+  for (const [id, k] of [['f-sideGapL', 'sideGapL'], ['f-sideGapR', 'sideGapR']]) {
+    const el = $(id); if (!el) continue;
+    el.disabled = linked; if (linked) el.value = f1(M.computed[k]);
+    const sm = el.closest('.field') && el.closest('.field').querySelector('small');
+    if (sm) sm.textContent = linked ? 'Set by the wall post: the end panel lines up with its cladding.' : (k === 'sideGapL' ? 'Scribe room.' : '');
+  }
+  const rl = $('f-front-rail');
+  if (rl) { rl.disabled = linked; if (linked) rl.value = ''; rl.placeholder = f1(M.computed['front.rail']); }
   const sp = $('obs-pos');
   if (sp && M.obs) sp.innerHTML = `Left side <b>${f1(M.obs.x0)}</b> from the left wall, top at <b>${f1(M.obs.z1)}</b>. Open, the door reaches <b>${f1(M.obs.envReach)}</b> from the back wall and dips to <b>${f1(M.obs.envLow)}</b> above the floor.`;
 }
@@ -2030,7 +2262,8 @@ function rebuild(keepView) {
   catch (e) { console.error(e); status('That combination does not lay out: ' + e.message); return; }
   syncDoors(model);
   if (viewer) { viewer.doorPos = doorPos; viewer.opts.sel = sel; viewer.setModel(model, keepView); viewer.set(view); }
-  fillComputed(); renderSummary(); renderObs(); renderElev(); renderSide(); renderCut();
+  computeCont(); if (viewer) viewer.setContainers(cont, contRes.spots, contRes.pick);
+  fillComputed(); renderSummary(); renderObs(); renderElev(); renderSide(); renderCut(); renderCont();
   $('hdr-size').textContent = `${f1(model.P.W)} x ${f1(model.P.H)} x ${f1(model.D)}`;
   $('hdr-sec').textContent = `${model.secs.length} section${model.secs.length > 1 ? 's' : ''}`;
   const on = !!model.obs, lab = model.P.box.label;
@@ -2063,6 +2296,11 @@ function renderSummary() {
   $('figs').innerHTML = figs.map(([k, v]) => `<div class="fig"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
   const items = M.checks.slice();
   for (const s of sheets) if (s.unplaced.length) items.unshift({ level: 'bad', title: `Parts bigger than a ${M.P.sheet.L} x ${M.P.sheet.W} sheet`, text: `${[...new Set(s.unplaced.map(u => u.name))].join(', ')} in ${s.T} mm. Use a longer sheet or split them.` });
+  if (contRes && contRes.spots.length && contRes.level !== 'ok') {
+    const w = contRes.sweeps[contRes.worstI];
+    items.push({ level: contRes.level, title: contRes.level === 'bad' ? 'A storage container hits on its way out' : 'A storage container comes close on its way out', text: `${f1(cont.W)} x ${f1(cont.L)} x ${f1(cont.H)}: ${w.d < 0 ? `${f1(-w.d)} into` : `${f1(w.d)} from`} the ${w.d === w.ceiling.d ? 'ceiling' : w.worst.name}. The tallest that clears with ${f1(cont.margin)} to spare is ${f1(contRes.maxH)}.` });
+  }
+  if (contRes && cont.show && contRes.placed < cont.n) items.push({ level: 'warn', title: 'Not every storage container fits', text: `Room for ${contRes.capacity} of the ${cont.n} on the tops at ${f1(model.P.mainTop)}.` });
   $('warns').innerHTML = items.map(c => `<div class="warn ${c.level === 'warn' ? '' : c.level}"><span><b>${esc(c.title)}.</b> ${esc(c.text)}</span></div>`).join('');
   const nb = items.filter(i => i.level === 'bad').length, nw = items.filter(i => i.level === 'warn').length;
   $('sum-note').textContent = nb ? `${nb} problem${nb > 1 ? 's' : ''} to fix` : nw ? `${nw} to check` : 'no clashes';
@@ -2104,14 +2342,14 @@ function svgDims() {
 }
 const HATCH = `<defs><pattern id="hatch" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="var(--bg)"/><line x1="0" y1="0" x2="0" y2="40" stroke="var(--wall)" stroke-width="5"/></pattern></defs>`;
 function renderElev() {
-  $('leg-shoes').hidden = view.shoes === 'off';
+  $('leg-shoes').hidden = view.shoes === 'off'; $('leg-cont').hidden = !(contRes && contRes.spots.length);
   const M = model, P = M.P, H = P.H, Wd = P.W, d = svgDims(), S = d.S, R = (p, cls, extra) => S.push(`<rect class="${cls}" x="${p.x0}" y="${H - p.z1}" width="${Math.max(1, p.x1 - p.x0)}" height="${Math.max(1, p.z1 - p.z0)}"${extra || ''}/>`);
   S.push(HATCH);
   // walls, floor, ceiling
   S.push(`<rect class="wall" x="-80" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="${Wd}" y="-80" width="80" height="${H + 160}"/><rect class="wall" x="0" y="-80" width="${Wd}" height="80"/><rect class="wall" x="-80" y="${H}" width="${Wd + 160}" height="60"/>`);
   // section hit areas
   M.secs.forEach(s => S.push(`<rect class="secbg${s.i === sel ? ' sel' : ''}" data-sec="${s.i}" x="${s.cx0}" y="${H - s.top}" width="${s.cw}" height="${s.top}"><title>S${s.i + 1}: click to edit</title></rect>`));
-  const order = ['back', 'kick', 'panel', 'top', 'base', 'shelf', 'adj', 'rail', 'front', 'handle'];
+  const order = ['back', 'kick', 'panel', 'top', 'base', 'shelf', 'adj', 'rail', 'front', 'handle', 'clad', 'stud'];
   const parts = M.parts.filter(p => order.includes(p.kind)).sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
   for (const p of parts) {
     if (p.kind === 'adj') S.push(`<line class="p-adj" x1="${p.x0 + 8}" x2="${p.x1 - 8}" y1="${H - (p.z0 + p.z1) / 2}" y2="${H - (p.z0 + p.z1) / 2}"/>`);
@@ -2134,6 +2372,8 @@ function renderElev() {
     S.push(`<polygon class="shoe" points="${pts(m.front.body)}" style="fill:${hexc(m.colors.body)}"><title>${C.SHOE_NAMES[q.style] || q.style}${q.staggered ? ', set back' : ''}</title></polygon>`);
     if (m.front.base.length) S.push(`<polygon class="shoe" points="${pts(m.front.base)}" style="fill:${hexc(m.colors.base)}"/>`);
   }
+  // storage containers on the tops
+  if (contRes) for (const [i, sp] of contRes.spots.entries()) S.push(`<rect class="p-cont" x="${sp.x0}" y="${H - sp.z0 - cont.H}" width="${cont.W}" height="${cont.H}" rx="8"><title>Storage container ${i + 1}: ${f1(cont.W)} x ${f1(cont.L)} x ${f1(cont.H)}</title></rect>`);
   // zone labels
   M.secs.forEach(s => s.zones.forEach(z => {
     const cx = (s.cx0 + s.cx1) / 2, mid = H - (z.z0 + z.z1) / 2;
@@ -2212,6 +2452,133 @@ function renderSide() {
   const vb = [-160, Y(H) - 140, D + 300, H - zLo + 140 + 260];
   $('side').innerHTML = `<svg viewBox="${vb.join(' ')}" role="img" aria-label="Side section through ${esc(P.box.label.toLowerCase())}">${S.join('')}</svg>`;
   $('side-cap').textContent = `Cut at ${f1(cx)} from the left wall, through the ${P.box.label.toLowerCase()}, seen from the left. Back wall on the left, room on the right. Red: the ${P.box.label.toLowerCase()}, its door at ${view.angle}°, and the space it sweeps.`;
+}
+
+/* ---------------------------------------------------------------- storage containers */
+const CONT_F = [
+  ['n', 'How many', '', 'Spread evenly along the tops.', 1],
+  ['W', 'Width', 'mm', 'Across the wardrobe.', 1],
+  ['L', 'Length', 'mm', 'Front to back, on the top.', 1],
+  ['H', 'Height', 'mm', 'With the lid on.', 1],
+  ['gap', 'Gap between them', 'mm', 'And at the ends of each run, at least.', 1],
+  ['back', 'Off the back wall', 'mm', '', 1],
+  ['tip', 'Tips over the edge at', '%', 'How much of its length hangs out when it tips down. Half is where it tips by itself.', 1],
+  ['margin', 'Clearance wanted', 'mm', 'Closer than this shows amber.', 1],
+];
+function contFieldsHTML() {
+  return CONT_F.map(([k, label, unit, hint, step]) => {
+    const v = k === 'tip' ? Math.round(cont.tip * 100) : cont[k];
+    return `<div class="field"><div><label for="c-${k}">${esc(label)}</label>${hint ? `<small>${esc(hint)}</small>` : ''}</div><div class="num"><input id="c-${k}" type="number" step="${step}" inputmode="decimal" data-c="${k}" value="${v}"><span>${esc(unit)}</span></div></div>`;
+  }).join('');
+}
+function computeCont() {
+  const M = model, r = C.containerSpots(M, cont);
+  const sweeps = r.spots.map(sp => C.containerSweep(M, cont, sp));
+  let worstI = 0; sweeps.forEach((w, i) => { if (w.d < sweeps[worstI].d) worstI = i; });
+  if (contPick === null || contPick >= r.spots.length) contPick = r.spots.length ? worstI : 0;
+  const maxH = r.spots.length ? Math.min(...r.spots.map(sp => C.containerMaxH(M, cont, sp))) : 0;
+  const level = sweeps.length ? sweeps[worstI].level : 'ok';
+  contRes = Object.assign(r, { sweeps, worstI, pick: contPick, maxH, level });
+}
+const pctOut = (t) => t <= 0 ? 'in' : t >= 1 ? 'out' : Math.round(t * 100) + '%';
+function setContT(t, fromAnim) {
+  contT = Math.min(1, Math.max(0, t));
+  for (const id of ['cont-t', 'cont-t3']) $(id).value = Math.round(contT * 1000);
+  const w = contRes && contRes.sweeps[contRes.pick], fr = w ? w.frames[Math.round(contT * (w.frames.length - 1))] : null;
+  const lvl = fr ? (fr.d < 0 ? 'bad' : fr.d < cont.margin ? 'warn' : 'ok') : 'ok';
+  for (const id of ['cont-out', 'cont-out3']) { $(id).textContent = pctOut(contT); $(id).className = lvl === 'ok' ? '' : 'lv-' + lvl; }
+  const lab = contT >= 1 ? 'Put it back' : 'Take one out';
+  for (const id of ['cont-play', 'cont-play3']) if (!contAnim) $(id).textContent = lab;
+  if (viewer) viewer.poseContainer(contT, lvl);
+  drawContSide();
+}
+function playCont() {
+  if (contAnim) { cancelAnimationFrame(contAnim); contAnim = 0; setContT(contT); return; }
+  const from = contT, to = contT >= 1 ? 0 : 1, dur = 3200 * Math.abs(to - from) || 1, t0 = performance.now();
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setContT(to); return; }
+  for (const id of ['cont-play', 'cont-play3']) $(id).textContent = 'Stop';
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    contAnim = k < 1 ? requestAnimationFrame(step) : 0;
+    setContT(from + (to - from) * e);
+  };
+  contAnim = requestAnimationFrame(step);
+}
+function contChanged() {
+  writeLS(LS_CONT, cont);
+  computeCont();
+  if (viewer) viewer.setContainers(cont, contRes.spots, contRes.pick);
+  renderSummary(); renderElev(); renderCont();
+}
+function renderCont() {
+  const M = model, P = M.P, r = contRes, on = cont.show;
+  $('cont-show').checked = on;
+  $('cont-bar').hidden = !(on && r.spots.length);
+  for (const el of document.querySelectorAll('#cont-fields input')) if (document.activeElement !== el) { const k = el.dataset.c; el.value = k === 'tip' ? Math.round(cont.tip * 100) : cont[k]; }
+  const fa = M.front.fascia, under = (fa ? fa.z0 : P.H) - P.mainTop;
+  $('cont-hint').innerHTML = `On the tops at <b>${f1(P.mainTop)}</b>, under the ${fa ? `fascia: <b>${f1(under)}</b> up to its underside, <b>${f1(P.H - P.mainTop)}</b> to the ceiling` : `ceiling: <b>${f1(under)}</b>`}, and <b>${f1(P.depth)}</b> deep. The same containers in every configuration. To take one out you slide it forward until it tips over the front edge, then let it tip down; the sliding doors open, ${P.front.doors && P.front.zone > 0 ? 'and the track the doors hang from, up behind the fascia, counted as solid' : 'with nothing else in the way'}.`;
+  const sel = $('cont-pick');
+  sel.innerHTML = r.spots.map((sp, i) => `<option value="${i}"${i === r.pick ? ' selected' : ''}>No. ${i + 1}, at ${Math.round(sp.x0)}${r.sweeps[i].level !== 'ok' ? (r.sweeps[i].level === 'bad' ? ', hits' : ', tight') : ''}</option>`).join('');
+  sel.hidden = r.spots.length < 2;
+  $('cont-play').disabled = !r.spots.length;
+  if (!on || !r.spots.length) {
+    $('cont-figs').innerHTML = ''; $('cont-side').innerHTML = ''; $('cont-cap').textContent = on ? `No room for a ${f1(cont.W)} wide container on the tops.` : 'Turned off.';
+    $('cont-note').textContent = on ? 'none fit' : 'off'; return;
+  }
+  const w = r.sweeps[r.worstI], cls = (d) => d < 0 ? 'lv-bad' : d < cont.margin ? 'lv-warn' : 'lv-good';
+  const whereW = (x) => x.t < 0.02 ? 'where it sits' : `${Math.round(x.t * 100)}% of the way out`;
+  const deep = P.depth - cont.back;
+  const figs = [
+    ['On the way out', `<span class="${cls(w.d)}">${w.d < 0 ? `${f1(-w.d)} into` : f1(w.d)}</span> <small>${w.d < 0 ? '' : 'mm '}${w.d === w.ceiling.d ? 'the ceiling' : `to the ${esc(w.worst.name)}`}, ${whereW(w.d === w.ceiling.d ? w.ceiling : w.worst)}</small>`],
+    ['Under the fascia', `${f1(under)} <small>${cont.H > under ? `${f1(cont.H - under)} too tall to slide under` : `${f1(under - cont.H)} over the lid, sliding`}</small>`],
+    ['Tallest that clears', `${f1(r.maxH)} <small>with ${f1(cont.margin)} to spare, tipping at ${Math.round(cont.tip * 100)}%</small>`],
+    ['On the top', `${f1(cont.L)} <small>of ${f1(deep)} from ${f1(cont.back)} off the wall${w.overhang > 0 ? `, ${f1(w.overhang)} over the edge` : ''}</small>`],
+    ['How many fit', `${r.placed} <small>of ${cont.n}; room for ${r.capacity}</small>`],
+  ];
+  $('cont-figs').innerHTML = figs.map(([k, v]) => `<div class="fig"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  $('cont-note').textContent = r.level === 'bad' ? 'one hits on its way out' : r.level === 'warn' ? 'tight on the way out' : `${f1(w.d)} mm clear on the way out`;
+  setContT(contT);
+}
+function drawContSide() {
+  const M = model, P = M.P, r = contRes;
+  if (!r || !cont.show || !r.spots.length) return;
+  const sp = r.spots[r.pick], w = r.sweeps[r.pick], H = P.H, D = M.D, Y = (z) => H - z;
+  const zLo = Math.max(0, sp.z0 - cont.L - 160), yHi = Math.max(D + 120, M.yc1 + cont.H + 120), cx = (sp.x0 + sp.x1) / 2, d = svgDims(), S = d.S;
+  S.push(HATCH);
+  S.push(`<rect class="wall" x="-60" y="${Y(H) - 50}" width="60" height="${H - zLo + 50}"/><rect class="wall" x="-60" y="${Y(H) - 50}" width="${yHi + 60}" height="50"/>`);
+  S.push(`<line class="ceil" x1="${D}" x2="${D}" y1="${Y(H)}" y2="${Y(zLo)}" stroke-dasharray="14 10"/>`);
+  const box = (p, cls) => { const z0 = Math.max(zLo, p.z0); if (p.z1 <= zLo) return; S.push(`<rect class="${cls}" x="${p.y0}" y="${Y(p.z1)}" width="${Math.max(1, p.y1 - p.y0)}" height="${Math.max(1, p.z1 - z0)}"/>`); };
+  for (const p of M.parts.filter(p => p.x0 <= cx && p.x1 >= cx && p.kind !== 'handle' && p.kind !== 'sdoor')) {
+    if (p.kind === 'rail') { const zc = (p.z0 + p.z1) / 2; if (zc > zLo) S.push(`<ellipse class="p-rail" cx="${(p.y0 + p.y1) / 2}" cy="${Y(zc)}" rx="9" ry="16"/>`); continue; }
+    box(p, 'p-' + (p.kind === 'adj' ? 'shelf' : p.kind));
+  }
+  for (const o of w.obstacles) {
+    if (o.name === 'door track') box(o.rect, 'p-track');
+    else if (o.rect && o.rect.kind === undefined && o.name !== 'fascia') box(o.rect, 'p-obs');
+    else if (o.rect && (o.rect.kind === 'stud' || o.rect.kind === 'clad') && !(o.rect.x0 <= cx && o.rect.x1 >= cx)) box(o.rect, 'p-' + o.rect.kind);
+    else if (!o.rect) S.push(`<polygon class="p-swing" points="${o.poly.map(q => `${q[0]},${Y(q[1])}`).join(' ')}"/>`);
+  }
+  // every few steps of the way out, faint; the closest one dashed; where it is now, solid
+  const pts = (poly) => poly.map(q => `${q[0].toFixed(1)},${Y(q[1]).toFixed(1)}`).join(' ');
+  w.frames.forEach((f, i) => { if (i % 5 === 0) S.push(`<polygon class="c-ghost" points="${pts(f.poly)}"/>`); });
+  const wi = w.frames.reduce((b, f, i) => f.d < w.frames[b].d ? i : b, 0), wf = w.frames[wi], wl = wf.d < 0 ? 'lv-bad' : wf.d < cont.margin ? 'lv-warn' : '';
+  S.push(`<polygon class="c-worst ${wl}" points="${pts(wf.poly)}"/>`);
+  const now = C.containerPose(M, cont, sp, contT), np = [[0, 0], [cont.L, 0], [cont.L, cont.H], [0, cont.H]].map(([u, v]) => now.pt(u, v));
+  const fi = w.frames[Math.round(contT * (w.frames.length - 1))], nl = fi.d < 0 ? 'lv-bad' : fi.d < cont.margin ? 'lv-warn' : '';
+  S.push(`<polygon class="c-now ${nl}" points="${pts(np)}"/>`);
+  // lid line
+  const lidT = Math.min(26, cont.H * 0.12), l0 = now.pt(0, cont.H - lidT), l1 = now.pt(cont.L, cont.H - lidT);
+  S.push(`<line class="c-ghost" x1="${l0[0]}" y1="${Y(l0[1])}" x2="${l1[0]}" y2="${Y(l1[1])}" style="opacity:.8"/>`);
+  // the closest it gets, labelled by the dashed outline
+  const top = wf.poly.reduce((b, q) => q[1] > b[1] ? q : b, wf.poly[0]);
+  S.push(`<text class="c-lab ${wl}" x="${Math.min(top[0] + 14, yHi - 10)}" y="${Y(top[1]) + 40}" ${top[0] + 14 > yHi - 260 ? 'text-anchor="end"' : ''}>${wf.d < 0 ? f1(-wf.d) + ' in' : f1(wf.d)}${wf.name ? ' ' + esc(wf.name === 'door track' ? 'track' : wf.name) : ''}</text>`);
+  const fa = M.front.fascia;
+  if (fa) { S.push(`<line class="dim" x1="-100" x2="${fa.y0}" y1="${Y(fa.z0)}" y2="${Y(fa.z0)}" stroke-dasharray="6 8" opacity=".55"/><line class="dim" x1="-100" x2="${sp.y0}" y1="${Y(sp.z0)}" y2="${Y(sp.z0)}" opacity=".55"/>`); d.dimV(H, sp.z0, fa.z0, -90, f1(fa.z0 - sp.z0), { side: -1, fs: 34 }); }
+  d.dimH(H, 0, M.yc1, zLo + 30, f1(M.yc1), { fs: 34 });
+  d.dimH(H, 0, D, zLo - 50, f1(D), { fs: 34 });
+  const vb = [-170, Y(H) - 110, yHi + 210, H - zLo + 110 + 120];
+  $('cont-side').innerHTML = `<svg viewBox="${vb.join(' ')}" role="img" aria-label="Side view of a storage container being taken out">${S.join('')}</svg>`;
+  $('cont-cap').textContent = `Container ${r.pick + 1}, seen from the left: back wall on the left, room on the right. Faint outlines: its path; dashed: the closest it comes${fi ? `; now ${fi.d < 0 ? `${f1(-fi.d)} into` : `${f1(fi.d)} from`} the ${fi.name || 'nearest thing'}` : ''}.`;
 }
 
 /* ---------------------------------------------------------------- cut list */
@@ -2434,6 +2801,20 @@ function bind() {
   $('v-open').addEventListener('change', (e) => { if (viewer) viewer.setAllDrawers(e.target.checked); });
   $('obs-angle').addEventListener('input', (e) => { view.angle = Number(e.target.value); $('obs-out').textContent = view.angle + '°'; if (viewer) viewer.set(view); renderSide(); });
   $('config').addEventListener('change', (e) => switchTo(e.target.value));
+  $('cont-fields').innerHTML = contFieldsHTML();
+  let contTimer = 0;
+  $('cont-fields').addEventListener('input', (e) => {
+    const el = e.target, k = el.dataset.c; if (!k || el.value === '' || !isFinite(Number(el.value))) return;
+    cont[k] = k === 'tip' ? Number(el.value) / 100 : Number(el.value);
+    clearTimeout(contTimer); contTimer = setTimeout(() => { cont = C.normCont(cont); contChanged(); }, 150);
+  });
+  $('cont-fields').addEventListener('change', () => { clearTimeout(contTimer); cont = C.normCont(cont); contChanged(); });
+  $('cont-show').addEventListener('change', (e) => { cont.show = e.target.checked; contChanged(); });
+  $('cont-turn').addEventListener('click', () => { [cont.W, cont.L] = [cont.L, cont.W]; cont = C.normCont(cont); contChanged(); });
+  $('cont-reset').addEventListener('click', () => { cont = C.normCont({}); contChanged(); });
+  $('cont-pick').addEventListener('change', (e) => { contPick = Number(e.target.value); contRes.pick = contPick; if (viewer) viewer.setContainers(cont, contRes.spots, contPick); drawContSide(); setContT(contT); });
+  for (const id of ['cont-t', 'cont-t3']) $(id).addEventListener('input', (e) => { if (contAnim) { cancelAnimationFrame(contAnim); contAnim = 0; } setContT(Number(e.target.value) / 1000); });
+  for (const id of ['cont-play', 'cont-play3']) $(id).addEventListener('click', playCont);
   $('cfg-add').addEventListener('click', addConfig);
   $('cfg-del').addEventListener('click', removeConfig);
   $('restore-cfg').addEventListener('click', () => { const n = book.hidden.length; book.hidden = []; save(); updateDesignSeg(); status(`Brought back ${n} configuration${n > 1 ? 's' : ''}.`); });
@@ -2488,7 +2869,7 @@ function start() {
   if (keptAtStart.length) status(`Some configurations were updated. Your edits are kept as ${keptAtStart.join(', ')}.`);
   rebuild(false);
   if (viewer) viewer.view('iso');
-  window.__robe = { get model() { return model; }, get state() { return state; }, get viewer() { return viewer; } };
+  window.__robe = { get model() { return model; }, get state() { return state; }, get viewer() { return viewer; }, get cont() { return cont; }, get contRes() { return contRes; }, setContT };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
