@@ -6,7 +6,8 @@ Use the GitHub Pages site, or serve the folder (the shoe models load from `shoes
 
 ## What you can change
 
-- **Cavity:** width, height, depth (wall reveal plus the depth added in front), side and back gaps, carcass depth, main top height.
+- **Cavity:** width at the front and at the back (for a cavity out of square), height, depth (wall reveal plus the depth added in front), carcass depth, main top height, and the packing between the end panels and the walls at the front and the back.
+- **Symmetry:** the page measures whether the drawers are centred on the sliding-door opening, the drawer sections mirror each other and the doors read the same both ways, says plainly whether the design is truly symmetric, and dimensions it over the elevation.
 - **Sections:** how many; each one's width (fixed, auto, the same as another section, fitted to an obstruction, or balancing so the middle stays centred), top height and kicker.
 - **Contents:** each section is a stack of zones: drawers, hanging, adjustable shelves or open space, with a fixed shelf between zones. Drawer stacks are built from stock drawer sizes (by box height), so rows line up across sections.
 - **Partitions:** end panels and partitions, each single or doubled, every leaf with its own height (auto, a number, or up to the ceiling).
@@ -20,7 +21,7 @@ Use the GitHub Pages site, or serve the folder (the shoe models load from `shoes
 
 ## Configurations
 
-The **Configuration** menu at the top switches between the built-in designs (AAGL - A to E and the company's rev.01, rev.02 and rev.04) and any you add. The circled **+** adds a configuration as a copy of the one you are looking at, under a name you choose; the circled **−** removes the one you are looking at (removed built-in ones can be brought back from Files and settings). Each configuration keeps its own edits in your browser.
+The **Configuration** menu at the top switches between the built-in designs (AAGL - A to G and the company's rev.01, rev.02 and rev.04) and any you add. The circled **+** adds a configuration as a copy of the one you are looking at, under a name you choose; the circled **−** removes the one you are looking at (removed built-in ones can be brought back from Files and settings). Each configuration keeps its own edits in your browser.
 
 ## Keeping and sharing a design
 
